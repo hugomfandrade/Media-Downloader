@@ -266,7 +266,7 @@ class ParsingItemsAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<Pa
             listener?.onLoadMoreClicked()
         }
 
-        override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+        override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
             val item : ParsingItem
             synchronized(parsingItems) {
                 item = parsingItems[adapterPosition]

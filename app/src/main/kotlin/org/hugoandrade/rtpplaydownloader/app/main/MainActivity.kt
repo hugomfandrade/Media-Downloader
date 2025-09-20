@@ -118,7 +118,7 @@ class MainActivity : ActivityBase() {
         }
 
         //
-        val editText: EditText? = searchView.findViewById(R.id.search_src_text)
+        val editText: EditText? = searchView.findViewById(androidx.appcompat.R.id.search_src_text)
         editText?.setTextColor(Color.WHITE)
         editText?.setHintTextColor(Color.parseColor("#90ffffff"))
 
@@ -384,7 +384,7 @@ class MainActivity : ActivityBase() {
         intent.removeExtra(Intent.EXTRA_TEXT)
 
         //
-        val editText: EditText? = searchView.findViewById(R.id.search_src_text)
+        val editText: EditText? = searchView.findViewById(androidx.appcompat.R.id.search_src_text)
 
         searchView.setQuery(url, true)
         editText?.setSelection(editText.text.length)
