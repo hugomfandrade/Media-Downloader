@@ -33,13 +33,13 @@ class RTPPlayPaginationParserTask : PaginationParserTask() {
                     return false
                 }
 
-                val episodeItems = doc?.getElementsByClass("episode-item")
+                val episodeItems = doc.getElementsByClass("episode-item")
 
-                if (episodeItems != null && !episodeItems.isEmpty()) {
+                if (!episodeItems.isEmpty()) {
 
                     for (episodeItem in episodeItems.iterator()) {
 
-                        episodeItem.attr("href") ?: continue
+                        episodeItem.attr("href")
 
                         return true
                     }
@@ -76,19 +76,19 @@ class RTPPlayPaginationParserTask : PaginationParserTask() {
 
                 cacheDoc = doc
 
-                val episodeContainer = doc?.getElementsByAttributeValue("id", "listProgramsContent")
+                val episodeContainer = doc.getElementsByAttributeValue("id", "listProgramsContent")
 
-                if (episodeContainer == null || episodeContainer.isEmpty()) {
+                if (episodeContainer.isEmpty()) {
                     return paginationUrl
                 }
 
-                val episodeItems = episodeContainer.first().getElementsByClass("episode-item")
+                val episodeItems = episodeContainer.first()!!.getElementsByClass("episode-item")
 
-                if (episodeItems != null && !episodeItems.isEmpty()) {
+                if (!episodeItems.isEmpty()) {
 
                     for (episodeItem in episodeItems.iterator()) {
 
-                        val href = episodeItem.attr("href") ?: continue
+                        val href = episodeItem.attr("href")
 
                         val episodeUrlString = "https://www.rtp.pt$href"
 
@@ -155,11 +155,11 @@ class RTPPlayPaginationParserTask : PaginationParserTask() {
 
             val episodeItems = d.getElementsByClass("episode-item")
 
-            if (episodeItems != null && !episodeItems.isEmpty()) {
+            if (!episodeItems.isEmpty()) {
 
                 for (episodeItem in episodeItems.iterator()) {
 
-                    val href = episodeItem.attr("href") ?: continue
+                    val href = episodeItem.attr("href")
 
                     val episodeUrlString = "https://www.rtp.pt$href"
 
@@ -180,15 +180,12 @@ class RTPPlayPaginationParserTask : PaginationParserTask() {
 
         val scriptElements = doc.getElementsByTag("script")
 
-        if (scriptElements != null) {
+        for (scriptElement in scriptElements.iterator()) {
 
-            for (scriptElement in scriptElements.iterator()) {
+            for (dataNode: DataNode in scriptElement.dataNodes()) {
 
-                for (dataNode: DataNode in scriptElement.dataNodes()) {
-
-                    if (dataNode.wholeData.contains("$id = ")) {
-                        return extractValue(dataNode, "$id = ", ";")
-                    }
+                if (dataNode.wholeData.contains("$id = ")) {
+                    return extractValue(dataNode, "$id = ", ";")
                 }
             }
         }
@@ -205,13 +202,10 @@ class RTPPlayPaginationParserTask : PaginationParserTask() {
 
         val classElements = doc.getElementsByClass(className)
 
-        if (classElements != null) {
+        val classElement = classElements.last()
 
-            val classElement = classElements.last()
-
-            if (classElement != null) {
-                return classElement.html()
-            }
+        if (classElement != null) {
+            return classElement.html()
         }
         return ""
     }

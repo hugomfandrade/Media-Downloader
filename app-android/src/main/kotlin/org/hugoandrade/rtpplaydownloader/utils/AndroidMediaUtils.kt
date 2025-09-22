@@ -10,6 +10,8 @@ import dev.hugomfandrade.mediadownloader.core.DownloadableItem
 import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import org.hugoandrade.rtpplaydownloader.R
 import java.io.File
+import androidx.core.net.toUri
+import androidx.core.content.edit
 
 class AndroidMediaUtils
 
@@ -35,8 +37,8 @@ private constructor() {
         fun getDownloadsDirectory(context: Context) : Uri {
 
             try {
-                return Uri.parse(context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
-                        .getString(directoryKey, getDefaultDir().toString()))
+                return context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+                    .getString(directoryKey, getDefaultDir().toString())!!.toUri()
             }
             catch (e : Exception) {
                 return Uri.fromFile(getDefaultDir())
@@ -50,31 +52,25 @@ private constructor() {
         fun putDownloadsDirectory(context: Context, uri: String) {
 
             context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
-                    .edit()
-                    .putString(directoryKey, uri)
-                    .apply()
+                    .edit {
+                        putString(directoryKey, uri)
+                    }
         }
 
         fun showInFolderIntent(context: Context, item: DownloadableItem) {
 
             try {
-                val dir = Uri.parse(File(item.filepath).parentFile.absolutePath + File.separator)
+                val dir = (File(item.filepath!!).parentFile!!.absolutePath + File.separator).toUri()
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                    intent.addCategory(Intent.CATEGORY_DEFAULT)
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                intent.addCategory(Intent.CATEGORY_DEFAULT)
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, dir)
-                    }
-
-                    intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                    context.startActivity(Intent.createChooser(intent, context.getString(R.string.open_folder)))
-                } else {
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.setDataAndType(dir, "*/*")
-                    context.startActivity(Intent.createChooser(intent, context.getString(R.string.open_folder)))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, dir)
                 }
+
+                intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+                context.startActivity(Intent.createChooser(intent, context.getString(R.string.open_folder)))
 
             } catch (e: Exception) { }
         }
@@ -82,7 +78,7 @@ private constructor() {
         fun openUrl(context: Context, item: DownloadableItem) {
 
             try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
+                context.startActivity(Intent(Intent.ACTION_VIEW, item.url.toUri()))
             } catch (e: Exception) { }
         }
 
@@ -91,8 +87,8 @@ private constructor() {
             try {
                 val filepath = item.filepath
                 if (MediaUtils.doesMediaFileExist(item)) {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(filepath))
-                            .setDataAndType(Uri.parse(filepath), "video/mp4"))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, filepath?.toUri())
+                            .setDataAndType(filepath?.toUri(), "video/mp4"))
                 } else {
                     ViewUtils.showToast(context, context.getString(R.string.file_not_found))
                 }

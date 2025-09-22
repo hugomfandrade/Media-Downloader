@@ -5,7 +5,7 @@ import dev.hugomfandrade.mediadownloader.core.parsing.ParsingUtils
 import dev.hugomfandrade.mediadownloader.core.utils.NetworkUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import java.net.URL
+import java.net.URI
 
 interface ParsingTask {
 
@@ -62,7 +62,7 @@ interface ParsingTask {
         val thumbnailUrl = parseThumbnailPath(doc)
 
         try {
-            URL(mediaUrl)
+            URI.create(mediaUrl).toURL()
         }
         catch (e: Exception) {
             e.printStackTrace()
@@ -75,7 +75,7 @@ interface ParsingTask {
     fun parseMediaUrl(doc: Document): String?
 
     fun parseMediaFileName(doc: Document, mediaUrl: String): String {
-        return ParsingUtils.Companion.getMediaFileName(doc, doc.baseUri()?: null.toString(), mediaUrl)
+        return ParsingUtils.Companion.getMediaFileName(doc, doc.baseUri(), mediaUrl)
     }
 
     fun parseThumbnailPath(doc: Document): String? {

@@ -17,7 +17,7 @@ open class RTPPlayParsingTaskV5 : RTPPlayTSParsingTask() {
 
         try {
 
-            val scriptElements = doc.getElementsByTag("script") ?: return null
+            val scriptElements = doc.getElementsByTag("script")
 
 
             for (scriptElement in scriptElements.iterator()) {
@@ -39,7 +39,7 @@ open class RTPPlayParsingTaskV5 : RTPPlayTSParsingTask() {
 
                             val fileKeyAsString = rtpPlayerSubString.substring(indexFrom, indexFrom + rtpPlayerSubString.substring(indexFrom).indexOf(to) + 1)
 
-                            val jsonElement = JsonParser().parse(fileKeyAsString).asJsonObject
+                            val jsonElement = JsonParser.parseString(fileKeyAsString).asJsonObject
 
                             val link = jsonElement.get("hls").asString
 

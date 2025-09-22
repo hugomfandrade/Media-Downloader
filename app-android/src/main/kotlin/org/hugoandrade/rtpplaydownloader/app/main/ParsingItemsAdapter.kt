@@ -269,7 +269,7 @@ class ParsingItemsAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<Pa
         override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
             val item : ParsingItem
             synchronized(parsingItems) {
-                item = parsingItems[adapterPosition]
+                item = parsingItems[bindingAdapterPosition]
                 item.isSelected.set(isChecked)
             }
         }

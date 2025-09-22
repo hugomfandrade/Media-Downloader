@@ -32,7 +32,6 @@ import dev.hugomfandrade.mediadownloader.core.parsing.ParsingData
 import dev.hugomfandrade.mediadownloader.core.parsing.ParsingTaskResult
 import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationParserTask
 import dev.hugomfandrade.mediadownloader.core.utils.FilenameLockerAdapter
-import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import org.hugoandrade.rtpplaydownloader.network.AndroidDownloadableItem
 import org.hugoandrade.rtpplaydownloader.utils.AndroidMediaUtils
 import org.hugoandrade.rtpplaydownloader.utils.ListenableFuture
@@ -274,7 +273,7 @@ class MainActivity : ActivityBase() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, p: Int) {
-                val position = viewHolder.adapterPosition
+                val position = viewHolder.bindingAdapterPosition
                 val downloadableItem = mDownloadItemsAdapter.get(position)
                 if (downloadableItem.isDownloading()) {
                     downloadableItem.cancel()

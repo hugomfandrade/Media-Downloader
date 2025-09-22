@@ -64,7 +64,7 @@ class RTPPlayParsingMultiPartTask : ParsingMultiPartTask() {
         // is Multi Part
         try {
 
-            val sectionParts = doc.getElementsByClass("section-parts") ?: return false
+            val sectionParts = doc.getElementsByClass("section-parts")
 
             for (sectionPart: Element in sectionParts.iterator()) {
 
@@ -109,7 +109,7 @@ class RTPPlayParsingMultiPartTask : ParsingMultiPartTask() {
                 return urlsMetadata
             }
 
-            val sectionParts = doc?.getElementsByClass("section-parts") ?: return urlsMetadata
+            val sectionParts = doc.getElementsByClass("section-parts")
 
             for (sectionPart: Element in sectionParts.iterator()) {
 
@@ -121,10 +121,11 @@ class RTPPlayParsingMultiPartTask : ParsingMultiPartTask() {
 
                             for (span: Element in li.getElementsByTag("span")) {
 
-                                val part: String = span.html().capitalize(Locale.getDefault())
-                                        .replace("PARTE", "P")
-                                        .replace("\\s+","")
-                                        .replace(" ","")
+                                val part: String = span.html()
+                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                                    .replace("PARTE", "P")
+                                    .replace("\\s+","")
+                                    .replace(" ","")
 
                                 urls.add(url)
                                 urlsMetadata.add(Metadata(url, part))
@@ -135,10 +136,11 @@ class RTPPlayParsingMultiPartTask : ParsingMultiPartTask() {
                         for (a: Element in li.getElementsByTag("a")) {
 
                             val href: String = a.attr("href")
-                            val part: String = a.html().capitalize(Locale.getDefault())
-                                    .replace("PARTE", "P")
-                                    .replace("\\s+","")
-                                    .replace(" ","")
+                            val part: String = a.html()
+                                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                                .replace("PARTE", "P")
+                                .replace("\\s+","")
+                                .replace(" ","")
 
                             if (href.isEmpty()) continue
                             urls.add("https://www.rtp.pt$href")

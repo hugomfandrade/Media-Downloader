@@ -163,7 +163,7 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
 
     fun add(downloadableItem: DownloadableItemAction) {
 
-        val pos = doAdd(downloadableItem);
+        val pos = doAdd(downloadableItem)
 
         if (pos != -1) {
             notifyItemInserted(pos)
@@ -207,7 +207,7 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
 
             downloadableItem.addDownloadStateChangeListener(this)
             downloadableItemList.add(pos, downloadableItem)
-            return pos;
+            return pos
         }
 
         return -1
@@ -296,7 +296,7 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
         override fun onClick(v: View?) {
             val item : DownloadableItemAction
             synchronized(downloadableItemList) {
-                item = downloadableItemList[adapterPosition]
+                item = downloadableItemList[bindingAdapterPosition]
             }
             when (v) {
                 binding.cancelDownloadImageView -> item.cancel()

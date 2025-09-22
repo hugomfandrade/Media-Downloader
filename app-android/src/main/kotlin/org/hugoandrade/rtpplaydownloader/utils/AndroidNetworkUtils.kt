@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
-import android.os.Build
 import org.hugoandrade.rtpplaydownloader.R
 
 class AndroidNetworkUtils
@@ -45,39 +44,22 @@ private constructor() {
                 val connMgr = context
                         .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    val networks = connMgr.allNetworks
+                val networks = connMgr.allNetworks
 
+                var wifiAvailability = false
+                var mobileAvailability = false
 
-                    var wifiAvailability = false
-                    var mobileAvailability = false
+                for (network in networks) {
+                    val networkInfo = connMgr.getNetworkInfo(network) ?: continue
 
-                    for (network in networks) {
-                        val networkInfo = connMgr.getNetworkInfo(network) ?: continue
-
-                        if (networkInfo.type == ConnectivityManager.TYPE_WIFI && networkInfo.isAvailable) {
-                            wifiAvailability = true
-                        } else if (networkInfo.type == ConnectivityManager.TYPE_MOBILE && networkInfo.isAvailable) {
-                            mobileAvailability = true
-                        }
+                    if (networkInfo.type == ConnectivityManager.TYPE_WIFI && networkInfo.isAvailable) {
+                        wifiAvailability = true
+                    } else if (networkInfo.type == ConnectivityManager.TYPE_MOBILE && networkInfo.isAvailable) {
+                        mobileAvailability = true
                     }
-
-                    return wifiAvailability || mobileAvailability
-                } else {
-
-                    val activeNetwork = connMgr.activeNetworkInfo
-                    var wifiAvailability = false
-                    var mobileAvailability = false
-                    if (activeNetwork != null) { // connected to the internet
-                        if (activeNetwork.type == ConnectivityManager.TYPE_WIFI) {
-                            wifiAvailability = true
-                        } else if (activeNetwork.type == ConnectivityManager.TYPE_MOBILE) {
-                            mobileAvailability = true
-                        }
-                    }
-
-                    return wifiAvailability || mobileAvailability
                 }
+
+                return wifiAvailability || mobileAvailability
             } catch (e: NullPointerException) {
                 return false
             }

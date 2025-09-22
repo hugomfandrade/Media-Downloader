@@ -3,7 +3,6 @@ package dev.hugomfandrade.mediadownloader.core.parsing
 import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.select.Elements
 import java.lang.Exception
 import kotlin.collections.elementAt
 import kotlin.collections.iterator
@@ -110,7 +109,7 @@ private constructor() {
 
                 val titleElements = doc.getElementsByTag("title")
 
-                if (mediaFileUrl != null && titleElements != null && titleElements.size > 0) {
+                if (mediaFileUrl != null && titleElements.isNotEmpty()) {
 
                     val title: String = MediaUtils.Companion.getTitleAsFilename(titleElements.elementAt(0).text())
 
@@ -150,11 +149,11 @@ private constructor() {
 
             try {
 
-                val headElements = doc.getElementsByTag("head")?:return null
+                val headElements = doc.getElementsByTag("head")
 
                 for (headElement in headElements.iterator()) {
 
-                    val metaElements = headElement.getElementsByTag("meta")?: Elements()
+                    val metaElements = headElement.getElementsByTag("meta")
 
                     for (metaElement in metaElements.iterator()) {
 
@@ -165,7 +164,7 @@ private constructor() {
                         }
 
                         val thumbnail = metaElement.attr("content")
-                        if (thumbnail.isNullOrEmpty()) {
+                        if (thumbnail.isEmpty()) {
                             continue
                         }
                         else {
@@ -209,11 +208,11 @@ private constructor() {
         fun getThumbnailFromTwitterMetadata(doc: Document) : String? {
             try {
 
-                val headElements = doc.getElementsByTag("head")?:return null
+                val headElements = doc.getElementsByTag("head")
 
                 for (headElement in headElements.iterator()) {
 
-                    val metaElements = headElement.getElementsByTag("meta")?: Elements()
+                    val metaElements = headElement.getElementsByTag("meta")
 
                     for (metaElement in metaElements.iterator()) {
 
@@ -224,7 +223,7 @@ private constructor() {
                         }
 
                         val thumbnail = metaElement.attr("content")
-                        if (thumbnail.isNullOrEmpty()) {
+                        if (thumbnail.isEmpty()) {
                             continue
                         }
                         else {

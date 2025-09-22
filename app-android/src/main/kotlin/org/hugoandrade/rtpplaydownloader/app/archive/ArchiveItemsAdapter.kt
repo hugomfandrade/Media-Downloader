@@ -188,7 +188,7 @@ class ArchiveItemsAdapter : RecyclerView.Adapter<ArchiveItemsAdapter.ViewHolder>
         override fun onClick(v: View?) {
             val item : AndroidDownloadableItem
             synchronized(downloadableItemList) {
-                item = downloadableItemList[adapterPosition]
+                item = downloadableItemList[bindingAdapterPosition]
                 listener?.onItemClicked(item)
             }
         }

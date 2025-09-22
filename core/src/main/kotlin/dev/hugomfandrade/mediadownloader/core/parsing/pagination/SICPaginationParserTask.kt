@@ -4,6 +4,7 @@ import dev.hugomfandrade.mediadownloader.core.utils.NetworkUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.IOException
+import java.net.URI
 import java.net.URL
 import kotlin.collections.iterator
 
@@ -24,7 +25,7 @@ class SICPaginationParserTask : PaginationParserTask() {
                         urlString.contains("sic.sapo.pt") ||
                         urlString.contains("sic.pt")
         try {
-            URL(urlString)
+            URI.create(urlString).toURL()
         }
         catch (e : Exception) {
             return false
@@ -41,37 +42,37 @@ class SICPaginationParserTask : PaginationParserTask() {
                     return false
                 }
 
-                val containers = doc?.getElementsByClass("categoryList")
+                val containers = doc.getElementsByClass("categoryList")
 
-                if (containers == null || containers.isEmpty()) return false
+                if (containers.isEmpty()) return false
 
                 for (container in containers.iterator()) {
 
                     val lis = container.getElementsByTag("li")
 
-                    if (lis == null || lis.isEmpty()) return false
+                    if (lis.isEmpty()) return false
 
                     for (li in lis.iterator()) {
 
                         val articles = li.getElementsByTag("article")
 
-                        if (articles == null || articles.isEmpty()) return false
+                        if (articles.isEmpty()) return false
 
                         for (article in articles.iterator()) {
 
                             val figures = article.getElementsByTag("figure")
 
-                            if (figures == null || figures.isEmpty()) return false
+                            if (figures.isEmpty()) return false
 
                             for (figure in figures.iterator()) {
 
                                 val episodeItems = figure.getElementsByTag("a")
 
-                                if (episodeItems == null || episodeItems.isEmpty()) return false
+                                if (episodeItems.isEmpty()) return false
 
                                 for (episodeItem in episodeItems.iterator()) {
 
-                                    episodeItem.attr("href") ?: continue
+                                    episodeItem.attr("href")
 
                                     return true
                                 }
@@ -105,7 +106,7 @@ class SICPaginationParserTask : PaginationParserTask() {
 
         val url: URL
         try {
-            url = URL(urlString)
+            url = URI.create(urlString).toURL()
         }
         catch (e : Exception) {
             return paginationUrl
@@ -124,37 +125,37 @@ class SICPaginationParserTask : PaginationParserTask() {
 
                 cacheDoc = doc
 
-                val containers = doc?.getElementsByClass("categoryList")
+                val containers = doc.getElementsByClass("categoryList")
 
-                if (containers == null || containers.isEmpty()) return paginationUrl
+                if (containers.isEmpty()) return paginationUrl
 
                 for (container in containers.iterator()) {
 
                     val lis = container.getElementsByTag("li")
 
-                    if (lis == null || lis.isEmpty()) return paginationUrl
+                    if (lis.isEmpty()) return paginationUrl
 
                     for (li in lis.iterator()) {
 
                         val articles = li.getElementsByTag("article")
 
-                        if (articles == null || articles.isEmpty()) return paginationUrl
+                        if (articles.isEmpty()) return paginationUrl
 
                         for (article in articles.iterator()) {
 
                             val figures = article.getElementsByTag("figure")
 
-                            if (figures == null || figures.isEmpty()) return paginationUrl
+                            if (figures.isEmpty()) return paginationUrl
 
                             for (figure in figures.iterator()) {
 
                                 val episodeItems = figure.getElementsByTag("a")
 
-                                if (episodeItems == null || episodeItems.isEmpty()) return paginationUrl
+                                if (episodeItems.isEmpty()) return paginationUrl
 
                                 for (episodeItem in episodeItems.iterator()) {
 
-                                    val href = episodeItem.attr("href") ?: continue
+                                    val href = episodeItem.attr("href")
 
                                     val episodeUrlString = url.protocol + "://" + url.host + href
 

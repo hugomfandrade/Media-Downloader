@@ -2,7 +2,7 @@ package dev.hugomfandrade.mediadownloader.core.utils
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import java.net.URL
+import java.net.URI
 
 class NetworkUtils
 /**
@@ -17,7 +17,7 @@ private constructor() {
     companion object {
 
         fun getDoc(url: String): Document? {
-            return getDoc(url, 10000);
+            return getDoc(url, 10000)
         }
 
         fun getDoc(url: String, millis: Int): Document? {
@@ -31,7 +31,7 @@ private constructor() {
 
         fun isValidURL(urlText: String): Boolean {
             return try {
-                val url = URL(urlText)
+                val url = URI.create(urlText).toURL()
                 "http" == url.protocol || "https" == url.protocol
             } catch (e: Exception) {
                 e.printStackTrace()

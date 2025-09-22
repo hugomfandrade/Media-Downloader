@@ -16,24 +16,22 @@ open class SICParsingTaskV1 : SICParsingTask() {
             val videoElements = doc.getElementsByTag("video")
             val url :String = doc.baseUri()
 
-            if (videoElements != null) {
-                for (videoElement in videoElements.iterator()) {
+            for (videoElement in videoElements.iterator()) {
 
-                    for (sourceElement: Element in videoElement.getElementsByTag("source")) {
+                for (sourceElement: Element in videoElement.getElementsByTag("source")) {
 
-                        val src : String = sourceElement.attr("src")
-                        val type: String = sourceElement.attr("type")
+                    val src : String = sourceElement.attr("src")
+                    val type: String = sourceElement.attr("type")
 
-                        if (src.isEmpty() || type.isEmpty()) continue
+                    if (src.isEmpty() || type.isEmpty()) continue
 
-                        val location : String = when {
-                            url.contains("http://") -> "http:"
-                            url.contains("https://") -> "https:"
-                            else -> ""
-                        }
-
-                        return location + src
+                    val location : String = when {
+                        url.contains("http://") -> "http:"
+                        url.contains("https://") -> "https:"
+                        else -> ""
                     }
+
+                    return location + src
                 }
             }
         }
@@ -51,23 +49,21 @@ open class SICParsingTaskV1 : SICParsingTask() {
             val videoElements = doc.getElementsByTag("video")
             var type: String? = null
 
-            if (videoElements != null) {
-                for (videoElement in videoElements.iterator()) {
+            for (videoElement in videoElements.iterator()) {
 
-                    for (sourceElement: Element in videoElement.getElementsByTag("source")) {
+                for (sourceElement: Element in videoElement.getElementsByTag("source")) {
 
-                        val src : String = sourceElement.attr("src")
-                        type = sourceElement.attr("type")
+                    val src : String = sourceElement.attr("src")
+                    type = sourceElement.attr("type")
 
-                        if (src.isEmpty() || type.isEmpty()) continue
-                        break
-                    }
+                    if (src.isEmpty() || type.isEmpty()) continue
+                    break
                 }
             }
 
             val titleElements = doc.getElementsByTag("title")
 
-            if (titleElements != null && titleElements.size > 0) {
+            if (titleElements.isNotEmpty()) {
 
                 val title: String = MediaUtils.Companion.getTitleAsFilename(titleElements.elementAt(0).text())
                         .replace("SIC.Noticias.", "")

@@ -11,7 +11,7 @@ import android.widget.TextView
 import org.hugoandrade.rtpplaydownloader.R
 import java.util.*
 
-class NavigationDrawerAdapter (private val activity: Activity) : androidx.recyclerview.widget.RecyclerView.Adapter<NavigationDrawerAdapter.ViewHolder>() {
+class NavigationDrawerAdapter (private val activity: Activity) : RecyclerView.Adapter<NavigationDrawerAdapter.ViewHolder>() {
 
     companion object {
         private val TAG = NavigationDrawerAdapter::class.java.simpleName
@@ -31,7 +31,7 @@ class NavigationDrawerAdapter (private val activity: Activity) : androidx.recycl
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         synchronized(mItemList) {
-            val item = mItemList[holder.adapterPosition]
+            val item = mItemList[holder.bindingAdapterPosition]
             val isHeader = item is Header
             holder.drawerHeader.visibility = if (isHeader) View.VISIBLE else View.GONE
             holder.drawerLayout.visibility = if (isHeader) View.GONE else View.VISIBLE
@@ -97,7 +97,7 @@ class NavigationDrawerAdapter (private val activity: Activity) : androidx.recycl
         var tvTitle: TextView = view.findViewById(R.id.tv_drawer_title)
 
         override fun onClick(v: View) {
-            val drawerItem = getItemAt(adapterPosition)
+            val drawerItem = getItemAt(bindingAdapterPosition)
             if (drawerItem != null) {
                 mListener?.onItemClicked(drawerItem)
             }

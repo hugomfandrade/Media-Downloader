@@ -16,7 +16,7 @@ open class RTPPlayParsingTaskV8 : RTPPlayTSParsingTask() {
     // get playlist url
     override fun parseMediaUrl(doc: Document): String? {
 
-        val scriptElements = doc.getElementsByTag("script") ?: return null
+        val scriptElements = doc.getElementsByTag("script")
 
         val availables = scriptElements.stream()
                 .map { scriptElement -> scriptElement.dataNodes() }
@@ -46,7 +46,7 @@ open class RTPPlayParsingTaskV8 : RTPPlayTSParsingTask() {
 
                     val fileKeyAsString = rtpPlayerSubString.substring(indexFrom, indexFrom + rtpPlayerSubString.substring(indexFrom).indexOf(to))
 
-                    val jsonArray : JsonArray = JsonParser().parse(fileKeyAsString).asJsonArray ?: continue
+                    val jsonArray : JsonArray = JsonParser.parseString(fileKeyAsString).asJsonArray ?: continue
 
                     val link = StringBuilder()
 

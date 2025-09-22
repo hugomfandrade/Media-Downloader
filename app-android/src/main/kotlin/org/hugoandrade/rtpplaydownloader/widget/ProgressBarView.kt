@@ -3,6 +3,7 @@ package org.hugoandrade.rtpplaydownloader.widget
 import android.content.Context
 import android.graphics.*
 import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
 import org.hugoandrade.rtpplaydownloader.R
@@ -19,7 +20,7 @@ class ProgressBarView @JvmOverloads constructor(context: Context, attrs: Attribu
     private var mIndicatorType: Int = 0
     private var isAnimEnabled: Boolean = false
 
-    private var mHandler: Handler = Handler()
+    private var mHandler: Handler = Handler(Looper.getMainLooper())
     private var animTimer: Timer? = null
     private var animInitX = 0f
 
@@ -71,7 +72,7 @@ class ProgressBarView @JvmOverloads constructor(context: Context, attrs: Attribu
         setProgressAnimationImpl(isAnimEnabled)
     }
 
-    public fun setProgressAnimation(enabled: Boolean) {
+    fun setProgressAnimation(enabled: Boolean) {
         isAnimEnabled = enabled
 
         setProgressAnimationImpl(isAnimEnabled)

@@ -6,7 +6,7 @@ import dev.hugomfandrade.mediadownloader.core.parsing.TSPlaylist
 import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import org.jsoup.nodes.Document
 import java.io.*
-import java.net.URL
+import java.net.URI
 import java.nio.charset.Charset
 import kotlin.collections.elementAt
 
@@ -39,7 +39,7 @@ class TVIPlayerParsingTask : TSParsingTask {
         try {
             val titleElements = doc.getElementsByTag("title")
 
-            if (titleElements != null && titleElements.size > 0) {
+            if (titleElements.isNotEmpty()) {
 
                 val title: String = MediaUtils.Companion.getTitleAsFilename(titleElements.elementAt(0).text())
 
@@ -56,7 +56,7 @@ class TVIPlayerParsingTask : TSParsingTask {
 
     override fun parseThumbnailPath(doc: Document): String? {
         try {
-            val scriptElements = doc.getElementsByTag("script") ?: return null
+            val scriptElements = doc.getElementsByTag("script")
 
             for (element in scriptElements) {
                 for (dataNode in element.dataNodes()) {
@@ -76,7 +76,7 @@ class TVIPlayerParsingTask : TSParsingTask {
     private fun getJWIOL(): String? {
         try {
             val tokenUrl = "https://services.iol.pt/matrix?userId="
-            val inputStream: InputStream = URL(tokenUrl).openStream()
+            val inputStream: InputStream = URI.create(tokenUrl).toURL().openStream()
             val textBuilder = StringBuilder()
             BufferedReader(InputStreamReader(inputStream, Charset.forName("UTF-8"))).use { reader ->
                 var c: Int = reader.read()
@@ -94,7 +94,7 @@ class TVIPlayerParsingTask : TSParsingTask {
 
     private fun getM3U8ChunkUrl(doc: Document): String? {
         try {
-            val scriptElements = doc.getElementsByTag("script") ?: return null
+            val scriptElements = doc.getElementsByTag("script")
 
             for (element in scriptElements) {
                 for (dataNode in element.dataNodes()) {
