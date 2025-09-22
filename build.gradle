@@ -24,12 +24,5 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-
-        // for azure
-        jcenter()
     }
-}
-
-tasks.register('clean', Delete) {
-    delete rootProject.buildDir
 }
