@@ -1,7 +1,7 @@
 package org.hugoandrade.rtpplaydownloader.network.persistence
 
 import androidx.room.TypeConverter
-import org.hugoandrade.rtpplaydownloader.network.DownloadableItem
+import dev.hugomfandrade.mediadownloader.core.DownloadableItem
 
 class DownloadableItemStateConverter {
 

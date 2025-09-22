@@ -40,10 +40,10 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':core')
 
     // sugar for stream
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
     // kotlin support
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -73,11 +73,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycleVersion"
 
     // html parsing lib
-    implementation 'org.jsoup:jsoup:1.12.1'
-    implementation 'commons-codec:commons-codec:1.15'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
-    implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'com.google.guava:guava:27.0.1-android'
+    implementation 'org.jsoup:jsoup:1.12.1'
 
     // test
     testImplementation 'junit:junit:4.13.2'

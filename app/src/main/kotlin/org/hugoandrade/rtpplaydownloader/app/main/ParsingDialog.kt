@@ -10,9 +10,9 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialog
 import androidx.recyclerview.widget.RecyclerView
 import org.hugoandrade.rtpplaydownloader.R
-import org.hugoandrade.rtpplaydownloader.network.parsing.ParsingData
-import org.hugoandrade.rtpplaydownloader.network.parsing.ParsingTaskResult
-import org.hugoandrade.rtpplaydownloader.network.parsing.pagination.PaginationParserTask
+import dev.hugomfandrade.mediadownloader.core.parsing.ParsingData
+import dev.hugomfandrade.mediadownloader.core.parsing.ParsingTaskResult
+import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationParserTask
 
 class ParsingDialog(context: Context): AppCompatDialog(context) {
 

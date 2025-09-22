@@ -10,9 +10,9 @@ import android.widget.TextView
 import org.hugoandrade.rtpplaydownloader.Config
 import org.hugoandrade.rtpplaydownloader.R
 import org.hugoandrade.rtpplaydownloader.databinding.DownloadItemBinding
-import org.hugoandrade.rtpplaydownloader.network.DownloadableItem
+import dev.hugomfandrade.mediadownloader.core.DownloadableItem
 import org.hugoandrade.rtpplaydownloader.network.DownloadableItemAction
-import org.hugoandrade.rtpplaydownloader.network.utils.MediaUtils
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import org.hugoandrade.rtpplaydownloader.utils.ImageHolder
 import java.io.File
 import java.util.*

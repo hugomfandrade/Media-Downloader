@@ -9,19 +9,22 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import dev.hugomfandrade.mediadownloader.core.DownloadableItem
+import dev.hugomfandrade.mediadownloader.core.download.DownloaderIdentifier
 import org.hugoandrade.rtpplaydownloader.Config
-import org.hugoandrade.rtpplaydownloader.network.download.*
-import org.hugoandrade.rtpplaydownloader.network.parsing.ParsingData
-import org.hugoandrade.rtpplaydownloader.network.parsing.ParsingTaskResult
-import org.hugoandrade.rtpplaydownloader.network.parsing.pagination.PaginationIdentifier
-import org.hugoandrade.rtpplaydownloader.network.parsing.pagination.PaginationParserTask
-import org.hugoandrade.rtpplaydownloader.network.parsing.tasks.ParsingTask
-import org.hugoandrade.rtpplaydownloader.network.parsing.tasks.ParsingIdentifier
-import org.hugoandrade.rtpplaydownloader.network.parsing.tasks.ParsingMultiPartTask
+import dev.hugomfandrade.mediadownloader.core.parsing.ParsingData
+import dev.hugomfandrade.mediadownloader.core.parsing.ParsingTaskResult
+import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationIdentifier
+import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationParserTask
+import dev.hugomfandrade.mediadownloader.core.parsing.tasks.ParsingTask
+import dev.hugomfandrade.mediadownloader.core.parsing.tasks.ParsingIdentifier
+import dev.hugomfandrade.mediadownloader.core.parsing.tasks.ParsingMultiPartTask
 import org.hugoandrade.rtpplaydownloader.network.persistence.DownloadableItemRepository
-import org.hugoandrade.rtpplaydownloader.network.utils.MediaUtils
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import org.hugoandrade.rtpplaydownloader.utils.ListenableFuture
-import org.hugoandrade.rtpplaydownloader.network.utils.NetworkUtils
+import dev.hugomfandrade.mediadownloader.core.utils.NetworkUtils
+import org.hugoandrade.rtpplaydownloader.utils.AndroidMediaUtils
+import org.hugoandrade.rtpplaydownloader.utils.AndroidNetworkUtils
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
 import java.util.concurrent.*
@@ -86,7 +89,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
 
             override fun run() {
 
-                if (!NetworkUtils.isNetworkAvailable(getApplication())) {
+                if (!AndroidNetworkUtils.isNetworkAvailable(getApplication())) {
                     future.failed("no network")
                     return
                 }
@@ -136,7 +139,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
                     return
                 }
 
-                parsingData.filename = MediaUtils.getUniqueFilenameAndLock(MediaUtils.getDownloadsDirectory(getApplication()).toString(), parsingData.filename?: "")
+                parsingData.filename = MediaUtils.getUniqueFilenameAndLock(AndroidMediaUtils.getDownloadsDirectory(getApplication()).toString(), parsingData.filename?: "")
 
                 val parsingDatas = if (parsingTask is ParsingMultiPartTask) parsingTask.datas else arrayListOf(parsingData)
 
@@ -161,7 +164,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
 
             override fun call(): ArrayList<ParsingData> {
 
-                if (!NetworkUtils.isNetworkAvailable(getApplication())) {
+                if (!AndroidNetworkUtils.isNetworkAvailable(getApplication())) {
                     future.failed("no network")
                     throw RuntimeException("no network")
                 }
@@ -214,7 +217,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
 
             override fun call(): ArrayList<ParsingData> {
 
-                if (!NetworkUtils.isNetworkAvailable(getApplication())) {
+                if (!AndroidNetworkUtils.isNetworkAvailable(getApplication())) {
                     future.failed("no network")
                     throw RuntimeException("no network")
                 }
@@ -262,7 +265,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
     private fun parseUrlWithoutPagination(url: String) : Callable<ParsingTaskResult> {
 
         return Callable {
-            if (!NetworkUtils.isNetworkAvailable(getApplication())) {
+            if (!AndroidNetworkUtils.isNetworkAvailable(getApplication())) {
                 throw RuntimeException("no network")
             }
 
@@ -278,7 +281,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
             val parsingData : ParsingData = parsingTask.parseMediaFile(url)
                     ?: throw RuntimeException("could not parse")
 
-            parsingData.filename = MediaUtils.getUniqueFilenameAndLock(MediaUtils.getDownloadsDirectory(getApplication()).toString(), parsingData.filename?: "")
+            parsingData.filename = MediaUtils.getUniqueFilenameAndLock(AndroidMediaUtils.getDownloadsDirectory(getApplication()).toString(), parsingData.filename?: "")
 
             ParsingTaskResult(parsingData, null)
         }
@@ -300,31 +303,32 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
 
         val tsUrl = parsingData.m3u8Playlist?.getTSUrls()?.firstOrNull()
 
-        val item : DownloadableItem = if (tsUrl == null) {
-            DownloadableItem(parsingData)
+        val item : AndroidDownloadableItem = if (tsUrl == null) {
+            AndroidDownloadableItem(parsingData)
         }
         else {
-            DownloadableItem(
-                    url = parsingData.url ?: null.toString(),
-                    mediaUrl = tsUrl.url,
-                    thumbnailUrl = parsingData.thumbnailUrl ?: null.toString(),
-                    filename = parsingData.filename ?: null.toString())
+            AndroidDownloadableItem(
+                url = parsingData.url ?: null.toString(),
+                mediaUrl = tsUrl.url,
+                thumbnailUrl = parsingData.thumbnailUrl ?: null.toString(),
+                filename = parsingData.filename ?: null.toString()
+            )
         }
 
         item.downloadTask = ParsingIdentifier.findType(parsingData)?.name
 
         val databaseFuture = mDatabaseModel.insertDownloadableItem(item)
-        databaseFuture.addCallback(object : ListenableFuture.Callback<DownloadableItem> {
+        databaseFuture.addCallback(object : ListenableFuture.Callback<AndroidDownloadableItem> {
             override fun onFailed(errorMessage: String) {
                 future.failed(errorMessage)
             }
 
-            override fun onSuccess(result: DownloadableItem) {
+            override fun onSuccess(result: AndroidDownloadableItem) {
 
-                val dirPath = MediaUtils.getDownloadsDirectory(getApplication())
+                val dirPath = AndroidMediaUtils.getDownloadsDirectory(getApplication())
 
                 try {
-                    val downloaderTask = DownloaderIdentifier.findTask(dirPath, result)
+                    val downloaderTask = DownloaderIdentifier.findTask(dirPath.toString(), result)
 
                     val action = DownloadableItemAction(result, downloaderTask)
                     action.addActionListener(actionListener)
@@ -349,16 +353,16 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
     override fun retrieveItemsFromDB() {
 
         val future = mDatabaseModel.retrieveAllDownloadableItems()
-        future.addCallback(object : ListenableFuture.Callback<List<DownloadableItem>> {
+        future.addCallback(object : ListenableFuture.Callback<List<AndroidDownloadableItem>> {
             override fun onFailed(errorMessage: String) {
                 Log.e(TAG, errorMessage)
             }
 
-            override fun onSuccess(result: List<DownloadableItem>) {
+            override fun onSuccess(result: List<AndroidDownloadableItem>) {
 
                 val downloadableItems = result
                 val actions : ArrayList<DownloadableItemAction> = ArrayList()
-                val dirPath = MediaUtils.getDownloadsDirectory(getApplication())
+                val dirPath = AndroidMediaUtils.getDownloadsDirectory(getApplication())
 
                 synchronized(this@DownloadManager.downloadableItems) {
                     val listItems = this@DownloadManager.downloadableItems
@@ -378,7 +382,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
                         if (contains) continue
 
                         try {
-                            val task = DownloaderIdentifier.findTask(dirPath, item)
+                            val task = DownloaderIdentifier.findTask(dirPath.toString(), item)
 
                             val action = DownloadableItemAction(item, task)
                             action.addActionListener(actionListener)
@@ -418,7 +422,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
         })
     }
 
-    override fun archive(downloadableItem: DownloadableItem) {
+    override fun archive(downloadableItem: AndroidDownloadableItem) {
         downloadableItem.isArchived = true
         mDatabaseModel.updateDownloadableEntry(downloadableItem)
     }
@@ -444,7 +448,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
 
         paginationUrls.forEach(action = { p ->
 
-            if (!NetworkUtils.isNetworkAvailable(getApplication())) {
+            if (!AndroidNetworkUtils.isNetworkAvailable(getApplication())) {
                 return false
             }
 
@@ -458,7 +462,7 @@ class DownloadManager(application: Application) : AndroidViewModel(application),
             val parsingData : ParsingData = paginationParsingTask.parseMediaFile(p) ?: return false
 
             parsingData.filename = MediaUtils.getUniqueFilenameAndLock(
-                    MediaUtils.getDownloadsDirectory(getApplication()).toString(), parsingData.filename?: "")
+                AndroidMediaUtils.getDownloadsDirectory(getApplication()).toString(), parsingData.filename?: "")
 
             if (paginationParsingTask is ParsingMultiPartTask) {
                 paginationParsingTask.datas.forEach { t ->

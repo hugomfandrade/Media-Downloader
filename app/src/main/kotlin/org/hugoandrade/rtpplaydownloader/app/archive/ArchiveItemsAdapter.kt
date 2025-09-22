@@ -9,15 +9,16 @@ import android.view.ViewGroup
 import android.widget.TextView
 import org.hugoandrade.rtpplaydownloader.R
 import org.hugoandrade.rtpplaydownloader.databinding.DownloadItemBinding
-import org.hugoandrade.rtpplaydownloader.network.DownloadableItem
-import org.hugoandrade.rtpplaydownloader.network.utils.MediaUtils
+import dev.hugomfandrade.mediadownloader.core.DownloadableItem
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
+import org.hugoandrade.rtpplaydownloader.network.AndroidDownloadableItem
 import org.hugoandrade.rtpplaydownloader.utils.ImageHolder
 import java.io.File
 import java.util.*
 
 class ArchiveItemsAdapter : RecyclerView.Adapter<ArchiveItemsAdapter.ViewHolder>() {
 
-    private val downloadableItemList: ArrayList<DownloadableItem> = ArrayList()
+    private val downloadableItemList: ArrayList<AndroidDownloadableItem> = ArrayList()
 
     private var listener: Listener? = null
 
@@ -118,18 +119,18 @@ class ArchiveItemsAdapter : RecyclerView.Adapter<ArchiveItemsAdapter.ViewHolder>
         return downloadableItemList[index]
     }
 
-    fun setItems(items: List<DownloadableItem>) {
+    fun setItems(items: List<AndroidDownloadableItem>) {
         clear()
         addAll(items)
     }
 
-    fun addAll(downloadableItems: List<DownloadableItem>) {
+    fun addAll(downloadableItems: List<AndroidDownloadableItem>) {
         for (downloadableItem in downloadableItems) {
             add(downloadableItem)
         }
     }
 
-    fun add(downloadableItem: DownloadableItem) {
+    fun add(downloadableItem: AndroidDownloadableItem) {
         val id = downloadableItem.id
         synchronized(downloadableItemList) {
 
@@ -169,7 +170,7 @@ class ArchiveItemsAdapter : RecyclerView.Adapter<ArchiveItemsAdapter.ViewHolder>
     }
 
     interface Listener {
-        fun onItemClicked(item : DownloadableItem)
+        fun onItemClicked(item : AndroidDownloadableItem)
     }
 
     fun setListener(listener: Listener?) {
@@ -185,7 +186,7 @@ class ArchiveItemsAdapter : RecyclerView.Adapter<ArchiveItemsAdapter.ViewHolder>
         }
 
         override fun onClick(v: View?) {
-            val item : DownloadableItem
+            val item : AndroidDownloadableItem
             synchronized(downloadableItemList) {
                 item = downloadableItemList[adapterPosition]
                 listener?.onItemClicked(item)

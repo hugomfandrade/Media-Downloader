@@ -8,11 +8,12 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import dev.hugomfandrade.mediadownloader.core.DownloadableItem
 import org.hugoandrade.rtpplaydownloader.Config
 import org.hugoandrade.rtpplaydownloader.R
 import org.hugoandrade.rtpplaydownloader.app.main.MainActivity
 import org.hugoandrade.rtpplaydownloader.network.persistence.DownloadableItemRepository
-import org.hugoandrade.rtpplaydownloader.network.utils.MediaUtils
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import java.util.*
 import java.util.concurrent.Executors
 import kotlin.collections.LinkedHashMap
@@ -221,7 +222,7 @@ class DownloadService : Service() {
                     updateNotification()
                 }
 
-                mDatabaseModel.updateDownloadableEntry(downloadableItem)
+                mDatabaseModel.updateDownloadableEntry(downloadableItem.toAndroid())
             }
         })
 
@@ -264,7 +265,7 @@ class DownloadService : Service() {
                 updateNotification()
             }
 
-            mDatabaseModel.updateDownloadableEntry(downloadableItem)
+            mDatabaseModel.updateDownloadableEntry(downloadableItem.toAndroid())
         }
     }
 
