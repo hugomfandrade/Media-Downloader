@@ -1,8 +1,9 @@
 package org.hugoandrade.rtpplaydownloader.versionupdater;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class PropertiesAdapter {
@@ -23,7 +24,7 @@ public class PropertiesAdapter {
         prop = new Properties();
 
         try {
-            InputStream input = new FileInputStream("azure-sql.properties");
+            InputStream input = Files.newInputStream(Paths.get("azure-sql.properties"));
             prop.load(input);
             input.close();
         } catch (IOException e) {

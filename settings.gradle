@@ -1,3 +1,4 @@
 include ':core'
 include ':app-android'
-include ':version-updater'
+include ':runner-desktop'
+include ':runner-version-updater'
