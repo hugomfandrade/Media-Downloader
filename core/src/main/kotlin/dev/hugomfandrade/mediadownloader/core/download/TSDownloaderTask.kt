@@ -3,7 +3,7 @@ package dev.hugomfandrade.mediadownloader.core.download
 import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
 import java.io.File
 import java.io.FileOutputStream
-import java.net.URL
+import java.net.URI
 import java.util.stream.Collectors
 import kotlin.math.max
 
@@ -22,7 +22,7 @@ class TSDownloaderTask(private var playlistUrl : String,
 
         try {
             try {
-                URL(playlistUrl)
+                URI.create(playlistUrl).toURL()
             }
             catch (e: Exception) {
                 dispatchDownloadFailed("URL no longer exists")

@@ -10,9 +10,7 @@ import java.io.InputStream
 import java.io.StringReader
 import java.net.URI
 import java.net.URISyntaxException
-import java.net.URL
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Scanner
 
 class TSUtils
 /**
@@ -40,7 +38,7 @@ private constructor() {
             if (!getUrlWithoutParameters(m3u8).endsWith(".m3u8")) return null
 
             try {
-                val chunkListUrl = URL(m3u8)
+                val chunkListUrl = URI.create(m3u8).toURL()
                 val s = Scanner(chunkListUrl.openStream())
                 while (s.hasNext()) {
                     val line: String = s.next()
@@ -59,7 +57,7 @@ private constructor() {
                 val tsPlaylist = TSPlaylist()
 
                 val baseUrl: String = playlistUrl.substring(0, playlistUrl.lastIndexOf("/") + 1)
-                val url = URL(playlistUrl)
+                val url = URI.create(playlistUrl).toURL()
                 val s = Scanner(url.openStream())
                 while (s.hasNext()) {
                     val line: String = s.next()
@@ -181,7 +179,7 @@ private constructor() {
                         .build()
 
                 val response = client.newCall(request).execute()
-                return response.body?.string()
+                return response.body.string()
                 /*
                 val httpClient = OkHttpClient.Builder()
                 val httpGet = HttpGet(url)
@@ -202,7 +200,7 @@ private constructor() {
                         .build()
 
                 val response = client.newCall(request).execute()
-                return response.body?.byteStream()
+                return response.body.byteStream()
                 /*
                 val httpClient = OkHttpClient.Builder()
                 val httpGet = HttpGet(url)

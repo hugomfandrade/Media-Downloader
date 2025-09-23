@@ -6,6 +6,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.lang.Exception
+import java.net.URI
 import java.net.URL
 
 class RawDownloaderTask(private val mediaUrl : String,
@@ -25,7 +26,7 @@ class RawDownloaderTask(private val mediaUrl : String,
         try {
             val url : URL
             try {
-                url = URL(mediaUrl)
+                url = URI.create(mediaUrl).toURL()
             }
             catch (e: Exception) {
                 dispatchDownloadFailed("URL no longer exists")

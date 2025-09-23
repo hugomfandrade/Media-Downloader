@@ -19,3 +19,7 @@ A demo video displaying the functionality of the app can be found here [https://
 |  ![](art/screenshot-01.png)  |  ![](art/screenshot-03.png)  |  ![](art/screenshot-04.png)  |
 |:----------------------------:|:----------------------------:|:----------------------------:|
 |  ![](art/screenshot-05.png)  |  ![](art/screenshot-06.png)  |  ![](art/screenshot-07.png)  | 
+
+## Credits / History
+
+This project evolved from [RTPPlay-Video-Downloader-Android-App](https://github.com/hugomfandrade/RTPPlay-Video-Downloader-Android-App).

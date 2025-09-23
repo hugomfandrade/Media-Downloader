@@ -14,26 +14,24 @@ open class SICParsingTaskV2 : SICParsingTaskV1() {
             val videoElements = doc.getElementsByTag("video")
             val url = doc.baseUri()
 
-            if (videoElements != null) {
-                for (videoElement in videoElements.iterator()) {
+            for (videoElement in videoElements.iterator()) {
 
-                    for (sourceElement: Element in videoElement.getElementsByTag("source")) {
+                for (sourceElement: Element in videoElement.getElementsByTag("source")) {
 
-                        val src : String = sourceElement.attr("src")
-                        val type: String = sourceElement.attr("type")
+                    val src : String = sourceElement.attr("src")
+                    val type: String = sourceElement.attr("type")
 
-                        if (src.isEmpty() || type.isEmpty()) continue
+                    if (src.isEmpty() || type.isEmpty()) continue
 
-                        if (type != "application/vnd.apple.mpegurl") return null
+                    if (type != "application/vnd.apple.mpegurl") return null
 
-                        val location : String = when {
-                            url.contains("http://") -> "http:"
-                            url.contains("https://") -> "https:"
-                            else -> ""
-                        }
-
-                        return location + src
+                    val location : String = when {
+                        url.contains("http://") -> "http:"
+                        url.contains("https://") -> "https:"
+                        else -> ""
                     }
+
+                    return location + src
                 }
             }
         }

@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <org.hugoandrade.rtpplaydownloader.widget.RoundedLinearLayout
+        <dev.hugomfandrade.mediadownloader.android.widget.RoundedLinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:background_color="#fff"
@@ -28,7 +28,7 @@
                 android:layout_height="70dp"
                 android:src="@mipmap/ic_launcher_foreground"/>
 
-        </org.hugoandrade.rtpplaydownloader.widget.RoundedLinearLayout>
+        </dev.hugomfandrade.mediadownloader.android.widget.RoundedLinearLayout>
 
     </LinearLayout>
 
