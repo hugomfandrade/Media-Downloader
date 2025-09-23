@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <variable name="ArchiveActivity" type="org.hugoandrade.rtpplaydownloader.app.archive.ArchiveActivity"/>
+        <variable name="ArchiveActivity" type="dev.hugomfandrade.mediadownloader.android.app.archive.ArchiveActivity"/>
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -39,7 +39,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_archive"
-                    android:tint="#BFBFBF"/>
+                    app:tint="#BFBFBF"/>
 
                 <TextView
                     android:layout_width="wrap_content"
