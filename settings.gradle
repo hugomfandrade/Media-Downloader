@@ -1,4 +1,5 @@
 include ':core'
+include ':ui-shared'
 include ':app-android'
 include ':runner-desktop'
 include ':runner-version-updater'
