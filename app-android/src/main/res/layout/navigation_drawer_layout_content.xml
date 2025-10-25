@@ -47,4 +47,9 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"/>
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/drawer_content_compose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>

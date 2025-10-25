@@ -1,7 +1,5 @@
 package dev.hugomfandrade.mediadownloader.android.app.main
 
-import android.app.Activity
-import android.content.Intent
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -9,15 +7,23 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import dev.hugomfandrade.mediadownloader.android.R
+import dev.hugomfandrade.mediadownloader.ui.shared.DrawerItem
+import dev.hugomfandrade.mediadownloader.ui.shared.Header
+import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawerInterface
+import dev.hugomfandrade.mediadownloader.ui.shared.OnDrawerClickListener
+import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
+import dev.hugomfandrade.mediadownloader.ui.shared.QuickAccessItem
 import java.util.*
 
-class NavigationDrawerAdapter (private val activity: Activity) : RecyclerView.Adapter<NavigationDrawerAdapter.ViewHolder>() {
+class NavigationDrawerAdapter :
+    NavigationDrawerInterface,
+    RecyclerView.Adapter<NavigationDrawerAdapter.ViewHolder>() {
 
     companion object {
         private val TAG = NavigationDrawerAdapter::class.java.simpleName
     }
 
-    private val mItemList: MutableList<Item> = ArrayList()
+    private val mItemList: MutableList<DrawerItem> = ArrayList()
     private var mListener: OnDrawerClickListener? = null
 
     override fun getItemCount(): Int {
@@ -54,39 +60,27 @@ class NavigationDrawerAdapter (private val activity: Activity) : RecyclerView.Ad
         }
     }
 
-    fun setOnItemClickListener(listener: OnDrawerClickListener?) {
+    override fun setOnItemClickListener(listener: OnDrawerClickListener) {
         mListener = listener
     }
 
-    fun addOptionItem(item: OptionItem) {
+    override fun addOptionItem(item: OptionItem) {
         synchronized(mItemList) { mItemList.add(item) }
     }
 
-    fun addItem(item: QuickAccessItem) {
+    override fun addItem(item: QuickAccessItem) {
         synchronized(mItemList) { mItemList.add(item) }
     }
 
-    fun addHeader(header: String?) {
+    override fun addHeader(header: String) {
         synchronized(mItemList) { mItemList.add(Header(header)) }
     }
 
-    fun getItemAt(position: Int): Item? {
+    fun getItemAt(position: Int): DrawerItem? {
         synchronized(mItemList) {
             return mItemList[position]
         }
     }
-
-    interface OnDrawerClickListener {
-        fun onItemClicked(drawerItem: Item?)
-    }
-
-    abstract class Item
-
-    class Header internal constructor(val headerTitle: String?) : Item()
-
-    data class OptionItem(val resourceID: Int, val title: String, val intent: Intent) : Item()
-
-    data class QuickAccessItem(val resourceID: Int, val title: String, val url: String) : Item()
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
 

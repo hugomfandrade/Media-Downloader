@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -39,6 +38,20 @@ import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationParse
 import dev.hugomfandrade.mediadownloader.core.utils.FilenameLockerAdapter
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
+import dev.hugomfandrade.mediadownloader.ui.shared.DrawerItem
+import dev.hugomfandrade.mediadownloader.ui.shared.Header
+import dev.hugomfandrade.mediadownloader.ui.shared.iconArchive
+import dev.hugomfandrade.mediadownloader.ui.shared.iconRTPPlay
+import dev.hugomfandrade.mediadownloader.ui.shared.iconSIC
+import dev.hugomfandrade.mediadownloader.ui.shared.iconSICNoticias
+import dev.hugomfandrade.mediadownloader.ui.shared.iconSICRadical
+import dev.hugomfandrade.mediadownloader.ui.shared.iconSettings
+import dev.hugomfandrade.mediadownloader.ui.shared.iconTVI
+import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawerContent
+import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawerInterface
+import dev.hugomfandrade.mediadownloader.ui.shared.OnDrawerClickListener
+import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
+import dev.hugomfandrade.mediadownloader.ui.shared.QuickAccessItem
 
 class MainActivity : ActivityBase() {
 
@@ -51,7 +64,7 @@ class MainActivity : ActivityBase() {
     private lateinit var mDownloadManager: DownloadManager
 
     private var mDrawerToggle: ActionBarDrawerToggle? = null
-    private var mDrawerAdapter: NavigationDrawerAdapter? = null
+    private var mDrawerAdapter: NavigationDrawerInterface? = null
     private var mPendingRunnable: Runnable? = null
     private val mHandler = Handler(Looper.getMainLooper())
 
@@ -206,21 +219,21 @@ class MainActivity : ActivityBase() {
         }
         binding.drawerLayout.addDrawerListener(drawerToggle)
 
-        val drawerAdapter = NavigationDrawerAdapter(this)
-        drawerAdapter.addOptionItem(NavigationDrawerAdapter.OptionItem(R.drawable.ic_archive, getString(R.string.archive), ArchiveActivity.Companion.makeIntent(this)))
+        val drawerAdapter : NavigationDrawerInterface = NavigationDrawerAdapter()
+        drawerAdapter.addOptionItem(OptionItem(R.drawable.ic_archive, getString(R.string.archive), { startActivity(ArchiveActivity.Companion.makeIntent(this)) }, null))
         drawerAdapter.addHeader(getString(R.string.quick_assess))
-        drawerAdapter.addItem(NavigationDrawerAdapter.QuickAccessItem(R.mipmap.ic_rtpplay, "RTP Play", "https://www.rtp.pt/play/"))
-        drawerAdapter.addItem(NavigationDrawerAdapter.QuickAccessItem(R.mipmap.ic_tvi_player, "TVI Player", "https://tviplayer.iol.pt/"))
-        drawerAdapter.addItem(NavigationDrawerAdapter.QuickAccessItem(R.mipmap.ic_sicradical, "SIC Radical", "https://sicradical.pt/"))
-        drawerAdapter.addItem(NavigationDrawerAdapter.QuickAccessItem(R.mipmap.ic_sicnoticias, "SIC Notícias", "https://sicnoticias.pt/"))
-        drawerAdapter.addItem(NavigationDrawerAdapter.QuickAccessItem(R.mipmap.ic_sic, "SIC", "https://sic.pt/"))
+        drawerAdapter.addItem(QuickAccessItem(R.mipmap.ic_rtpplay, title = "RTP Play", "https://www.rtp.pt/play/", null))
+        drawerAdapter.addItem(QuickAccessItem(R.mipmap.ic_tvi_player, "TVI Player", "https://tviplayer.iol.pt/", null))
+        drawerAdapter.addItem(QuickAccessItem(R.mipmap.ic_sicradical, "SIC Radical", "https://sicradical.pt/", null))
+        drawerAdapter.addItem(QuickAccessItem(R.mipmap.ic_sicnoticias, "SIC Notícias", "https://sicnoticias.pt/", null))
+        drawerAdapter.addItem(QuickAccessItem(R.mipmap.ic_sic, "SIC", "https://sic.pt/", null))
         drawerAdapter.addHeader("")
-        drawerAdapter.addOptionItem(NavigationDrawerAdapter.OptionItem(R.drawable.ic_settings, getString(R.string.settings), SettingsActivity.Companion.makeIntent(this)))
-        drawerAdapter.setOnItemClickListener(object : NavigationDrawerAdapter.OnDrawerClickListener {
+        drawerAdapter.addOptionItem(OptionItem(R.drawable.ic_settings, getString(R.string.settings), { startActivity(SettingsActivity.Companion.makeIntent(this)) }, null))
+        drawerAdapter.setOnItemClickListener(object : OnDrawerClickListener {
 
-            override fun onItemClicked(drawerItem: NavigationDrawerAdapter.Item?) {
+            override fun onItemClicked(drawerItem: DrawerItem?) {
                 if (drawerItem != null) {
-                    if (drawerItem is NavigationDrawerAdapter.QuickAccessItem) {
+                    if (drawerItem is QuickAccessItem) {
                         mPendingRunnable = Runnable {
                             try {
                                 val browserIntent = Intent(Intent.ACTION_VIEW, drawerItem.url.toUri())
@@ -230,10 +243,10 @@ class MainActivity : ActivityBase() {
                             }
                         }
                     }
-                    else if (drawerItem is NavigationDrawerAdapter.OptionItem) {
+                    else if (drawerItem is OptionItem) {
                         mPendingRunnable = Runnable {
                             try {
-                                startActivity(drawerItem.intent)
+                                drawerItem.intent.run()
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -244,7 +257,44 @@ class MainActivity : ActivityBase() {
             }
         })
 
-        binding.drawerLayout.navigationDrawerContent.adapter = drawerAdapter
+        binding.drawerLayout.navigationDrawerContentCompose.setContent {
+            val drawerItems = arrayOf(
+                OptionItem(0, getString(R.string.archive), { startActivity(ArchiveActivity.Companion.makeIntent(this)) }, iconArchive()),
+                Header("Quick Access"),
+                QuickAccessItem(0, "RTP Play", "https://www.rtp.pt/play/", iconRTPPlay()),
+                QuickAccessItem(0, "TVI Player", "https://tviplayer.iol.pt/", iconTVI()),
+                QuickAccessItem(0, "SIC Radical", "https://sicradical.pt/", iconSICRadical()),
+                QuickAccessItem(0, "SIC Notícias", "https://sicnoticias.pt/", iconSICNoticias()),
+                QuickAccessItem(0, "SIC", "https://sic.pt/", iconSIC()),
+                Header(""),
+                OptionItem(0, getString(R.string.settings), { startActivity(SettingsActivity.Companion.makeIntent(this)) }, iconSettings())
+            )
+            NavigationDrawerContent(drawerItems) {
+                drawerItem -> {
+                if (drawerItem is QuickAccessItem) {
+                    mPendingRunnable = Runnable {
+                        try {
+                            val browserIntent = Intent(Intent.ACTION_VIEW, drawerItem.url.toUri())
+                            startActivity(browserIntent)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                else if (drawerItem is OptionItem) {
+                    mPendingRunnable = Runnable {
+                        try {
+                            drawerItem.intent.run()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            } }
+        }
+
+        binding.drawerLayout.navigationDrawerContent.adapter = drawerAdapter as NavigationDrawerAdapter
         binding.drawerLayout.navigationDrawerContent.layoutManager = LinearLayoutManager(this)
 
         this.mDrawerToggle = drawerToggle
