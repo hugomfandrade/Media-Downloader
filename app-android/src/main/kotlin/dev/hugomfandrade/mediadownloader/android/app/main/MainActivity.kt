@@ -40,6 +40,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import dev.hugomfandrade.mediadownloader.ui.shared.DrawerItem
 import dev.hugomfandrade.mediadownloader.ui.shared.Header
+import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawer
 import dev.hugomfandrade.mediadownloader.ui.shared.iconArchive
 import dev.hugomfandrade.mediadownloader.ui.shared.iconRTPPlay
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSIC
@@ -257,7 +258,7 @@ class MainActivity : ActivityBase() {
             }
         })
 
-        binding.drawerLayout.navigationDrawerContentCompose.setContent {
+        binding.drawerLayout.navigationDrawerContentCompose?.setContent {
             val drawerItems = arrayOf(
                 OptionItem(0, getString(R.string.archive), { startActivity(ArchiveActivity.Companion.makeIntent(this)) }, iconArchive()),
                 Header("Quick Access"),
@@ -269,8 +270,8 @@ class MainActivity : ActivityBase() {
                 Header(""),
                 OptionItem(0, getString(R.string.settings), { startActivity(SettingsActivity.Companion.makeIntent(this)) }, iconSettings())
             )
-            NavigationDrawerContent(drawerItems) {
-                drawerItem -> {
+            NavigationDrawer(drawerItems) {
+                drawerItem ->
                 if (drawerItem is QuickAccessItem) {
                     mPendingRunnable = Runnable {
                         try {
@@ -291,11 +292,11 @@ class MainActivity : ActivityBase() {
                     }
                 }
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
-            } }
+            }
         }
 
-        binding.drawerLayout.navigationDrawerContent.adapter = drawerAdapter as NavigationDrawerAdapter
-        binding.drawerLayout.navigationDrawerContent.layoutManager = LinearLayoutManager(this)
+        binding.drawerLayout.navigationDrawerContent?.adapter = drawerAdapter as NavigationDrawerAdapter
+        binding.drawerLayout.navigationDrawerContent?.layoutManager = LinearLayoutManager(this)
 
         this.mDrawerToggle = drawerToggle
         this.mDrawerAdapter = drawerAdapter

@@ -15,6 +15,7 @@ import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
 import dev.hugomfandrade.mediadownloader.ui.shared.QuickAccessItem
 import java.util.*
 
+@Deprecated("to be replaced with compose equivalent")
 class NavigationDrawerAdapter :
     NavigationDrawerInterface,
     RecyclerView.Adapter<NavigationDrawerAdapter.ViewHolder>() {

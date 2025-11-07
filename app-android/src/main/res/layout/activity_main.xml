@@ -6,7 +6,7 @@
         <variable name="MainActivity" type="dev.hugomfandrade.mediadownloader.android.app.main.MainActivity"/>
     </data>
 
-    <dev.hugomfandrade.mediadownloader.android.widget.NavigationDrawerLayout
+    <dev.hugomfandrade.mediadownloader.android.app.main.NavigationDrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -59,6 +59,6 @@
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    </dev.hugomfandrade.mediadownloader.android.widget.NavigationDrawerLayout>
+    </dev.hugomfandrade.mediadownloader.android.app.main.NavigationDrawerLayout>
 
 </layout>
