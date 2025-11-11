@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -213,3 +214,8 @@ fun HeaderView(header: Header) {
 @Composable fun iconSICNoticias() = painterResource(Res.drawable.ic_sicnoticias)
 @Composable fun iconSIC() = painterResource(Res.drawable.ic_sic)
 @Composable fun iconSettings() = painterResource(Res.drawable.ic_settings)
+
+abstract class DrawerItem
+data class Header(val headerTitle: String) : DrawerItem()
+data class OptionItem(val title: String, val resource: Painter, val intent: Runnable) : DrawerItem()
+data class QuickAccessItem(val title: String, val resource: Painter, val url: String) : DrawerItem()

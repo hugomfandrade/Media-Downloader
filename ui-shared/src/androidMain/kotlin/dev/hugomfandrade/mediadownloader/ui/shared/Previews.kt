@@ -11,15 +11,15 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun NavigationDrawerPreview() {
     val drawerItems = arrayOf(
-        OptionItem(0, "Archive", {}, painterResource(Res.drawable.ic_archive)),
+        OptionItem("Archive", painterResource(Res.drawable.ic_archive), {}),
         Header("Quick Access"),
-        QuickAccessItem(0, "RTP Play", "https://www.rtp.pt/play/", painterResource(Res.drawable.ic_rtpplay)),
-        QuickAccessItem(0, "TVI Player", "https://tviplayer.iol.pt/", painterResource(Res.drawable.ic_tvi_player)),
-        QuickAccessItem(0, "SIC Radical", "https://sicradical.pt/", painterResource(Res.drawable.ic_sicradical)),
-        QuickAccessItem(0, "SIC Notícias", "https://sicnoticias.pt/", painterResource(Res.drawable.ic_sicnoticias)),
-        QuickAccessItem(0, "SIC", "https://sic.pt/", painterResource(Res.drawable.ic_sic)),
+        QuickAccessItem("RTP Play", painterResource(Res.drawable.ic_rtpplay), "https://www.rtp.pt/play/"),
+        QuickAccessItem("TVI Player", painterResource(Res.drawable.ic_tvi_player), "https://sicradical.pt/"),
+        QuickAccessItem("SIC Radical", painterResource(Res.drawable.ic_sicradical), "https://sicradical.pt/"),
+        QuickAccessItem("SIC Notícias", painterResource(Res.drawable.ic_sicnoticias), "https://sicnoticias.pt/"),
+        QuickAccessItem("SIC", painterResource(Res.drawable.ic_sic), "https://sic.pt/"),
         Header(""),
-        OptionItem(0, "Settings", {}, painterResource(Res.drawable.ic_settings))
+        OptionItem("Settings", painterResource(Res.drawable.ic_settings), {})
     )
     MaterialTheme {
         NavigationDrawer(drawerItems, {})
@@ -30,15 +30,15 @@ fun NavigationDrawerPreview() {
 @Composable
 fun NavigationDrawerContentPreview() {
     val drawerItems = arrayOf(
-        OptionItem(0, "Archive", {}, painterResource(Res.drawable.ic_archive)),
+        OptionItem("Archive", painterResource(Res.drawable.ic_archive), {}),
         Header("Quick Access"),
-        QuickAccessItem(0, "RTP Play", "https://www.rtp.pt/play/", painterResource(Res.drawable.ic_rtpplay)),
-        QuickAccessItem(0, "TVI Player", "https://tviplayer.iol.pt/", painterResource(Res.drawable.ic_tvi_player)),
-        QuickAccessItem(0, "SIC Radical", "https://sicradical.pt/", painterResource(Res.drawable.ic_sicradical)),
-        QuickAccessItem(0, "SIC Notícias", "https://sicnoticias.pt/", painterResource(Res.drawable.ic_sicnoticias)),
-        QuickAccessItem(0, "SIC", "https://sic.pt/", painterResource(Res.drawable.ic_sic)),
+        QuickAccessItem("RTP Play", painterResource(Res.drawable.ic_rtpplay), "https://www.rtp.pt/play/"),
+        QuickAccessItem("TVI Player", painterResource(Res.drawable.ic_tvi_player), "https://sicradical.pt/"),
+        QuickAccessItem("SIC Radical", painterResource(Res.drawable.ic_sicradical), "https://sicradical.pt/"),
+        QuickAccessItem("SIC Notícias", painterResource(Res.drawable.ic_sicnoticias), "https://sicnoticias.pt/"),
+        QuickAccessItem("SIC", painterResource(Res.drawable.ic_sic), "https://sic.pt/"),
         Header(""),
-        OptionItem(0, "Settings", {}, painterResource(Res.drawable.ic_settings))
+        OptionItem("Settings", painterResource(Res.drawable.ic_settings), {})
     )
     MaterialTheme {
         NavigationDrawerContent(drawerItems, {})

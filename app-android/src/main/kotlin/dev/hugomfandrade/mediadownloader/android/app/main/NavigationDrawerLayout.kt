@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.recyclerview.widget.RecyclerView
 import dev.hugomfandrade.mediadownloader.android.R
 
 @Deprecated("to be replaced with compose equivalent")
@@ -16,11 +15,7 @@ class NavigationDrawerLayout @JvmOverloads constructor(context: Context, attrs: 
     : DrawerLayout(context, attrs, defStyle) {
 
     var coordinatorLayout: CoordinatorLayout? = null
-    var navigationDrawerContent: RecyclerView? = null
     var navigationDrawerContentCompose: ComposeView? = null
-
-    init {
-    }
 
     override fun onFinishInflate() {
         super.onFinishInflate()
@@ -30,8 +25,6 @@ class NavigationDrawerLayout @JvmOverloads constructor(context: Context, attrs: 
         inflater.inflate(R.layout.navigation_drawer_layout, this, true)
 
         coordinatorLayout = findViewById(R.id.coordinator_layout)
-        // navigationDrawerContent = findViewById(R.id.drawer_content)
-        navigationDrawerContent?.visibility = GONE
         navigationDrawerContentCompose = findViewById(R.id.navigation_drawer_compose)
     }
 
