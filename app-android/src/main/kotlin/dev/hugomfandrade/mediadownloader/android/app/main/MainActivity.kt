@@ -38,6 +38,7 @@ import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationParse
 import dev.hugomfandrade.mediadownloader.core.utils.FilenameLockerAdapter
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
+import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
 import dev.hugomfandrade.mediadownloader.ui.shared.DrawerItem
 import dev.hugomfandrade.mediadownloader.ui.shared.Header
 import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawer
@@ -48,7 +49,6 @@ import dev.hugomfandrade.mediadownloader.ui.shared.iconSICNoticias
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSICRadical
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSettings
 import dev.hugomfandrade.mediadownloader.ui.shared.iconTVI
-import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawerContent
 import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawerInterface
 import dev.hugomfandrade.mediadownloader.ui.shared.OnDrawerClickListener
 import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
@@ -146,7 +146,7 @@ class MainActivity : ActivityBase() {
             editText?.setSelection(editText.text.length)
             searchView.isIconified = false
         } else {
-            ViewUtils.Companion.hideSoftKeyboardAndClearFocus(searchView)
+            ViewUtils.hideSoftKeyboardAndClearFocus(searchView)
         }
 
         extractActionSendIntentAndUpdateUI(intent)
@@ -270,28 +270,30 @@ class MainActivity : ActivityBase() {
                 Header(""),
                 OptionItem(0, getString(R.string.settings), { startActivity(SettingsActivity.Companion.makeIntent(this)) }, iconSettings())
             )
-            NavigationDrawer(drawerItems) {
-                drawerItem ->
-                if (drawerItem is QuickAccessItem) {
-                    mPendingRunnable = Runnable {
-                        try {
-                            val browserIntent = Intent(Intent.ACTION_VIEW, drawerItem.url.toUri())
-                            startActivity(browserIntent)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+            LegacyAppCompatTheme {
+                NavigationDrawer(drawerItems) {
+                        drawerItem ->
+                    if (drawerItem is QuickAccessItem) {
+                        mPendingRunnable = Runnable {
+                            try {
+                                val browserIntent = Intent(Intent.ACTION_VIEW, drawerItem.url.toUri())
+                                startActivity(browserIntent)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
                     }
-                }
-                else if (drawerItem is OptionItem) {
-                    mPendingRunnable = Runnable {
-                        try {
-                            drawerItem.intent.run()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                    else if (drawerItem is OptionItem) {
+                        mPendingRunnable = Runnable {
+                            try {
+                                drawerItem.intent.run()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
                     }
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
                 }
-                binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
         }
 
@@ -307,8 +309,8 @@ class MainActivity : ActivityBase() {
         mDownloadItemsRecyclerView = binding.downloadItemsRecyclerView
         mDownloadItemsRecyclerView.itemAnimator = simpleItemAnimator
         mDownloadItemsRecyclerView.layoutManager =
-                if (!ViewUtils.Companion.isTablet(this) && ViewUtils.Companion.isPortrait(this)) LinearLayoutManager(this)
-                else GridLayoutManager(this, if (ViewUtils.Companion.isTablet(this) && !ViewUtils.Companion.isPortrait(this)) 3 else 2)
+                if (!ViewUtils.isTablet(this) && ViewUtils.isPortrait(this)) LinearLayoutManager(this)
+                else GridLayoutManager(this, if (ViewUtils.isTablet(this) && !ViewUtils.isPortrait(this)) 3 else 2)
         mDownloadItemsAdapter = DownloadItemsAdapter()
         mDownloadItemsRecyclerView.adapter = mDownloadItemsAdapter
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)) {
