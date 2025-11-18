@@ -7,6 +7,14 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
@@ -22,6 +30,9 @@ import dev.hugomfandrade.mediadownloader.android.utils.ListenableFuture
 import dev.hugomfandrade.mediadownloader.android.utils.ViewUtils
 import dev.hugomfandrade.mediadownloader.android.R
 import dev.hugomfandrade.mediadownloader.android.databinding.ActivityArchiveBinding
+import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
+import dev.hugomfandrade.mediadownloader.ui.shared.Toolbar
+import dev.hugomfandrade.mediadownloader.ui.shared.ToolbarBackButton
 import java.util.concurrent.ConcurrentHashMap
 
 class ArchiveActivity : ActivityBase() {
@@ -88,13 +99,16 @@ class ArchiveActivity : ActivityBase() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_archive)
 
-        setSupportActionBar(findViewById(R.id.toolbar))
-
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.title = getString(R.string.archive)
-            actionBar.setDisplayHomeAsUpEnabled(true)
-            // actionBar.setHomeButtonEnabled(false)
+        val toolbarComposeView: ComposeView = binding.appbarCompose
+        toolbarComposeView.setContent {
+            LegacyAppCompatTheme {
+                Toolbar(
+                    title = getString(R.string.archive).uppercase(),
+                    navigationIcon = {
+                        ToolbarBackButton(onClick = { onBackPressedDispatcher.onBackPressed() })
+                    }
+                )
+            }
         }
 
         val simpleItemAnimator : SimpleItemAnimator = DefaultItemAnimator()
@@ -103,8 +117,8 @@ class ArchiveActivity : ActivityBase() {
         mArchivedItemsRecyclerView = binding.archiveItemsRecyclerView
         mArchivedItemsRecyclerView.itemAnimator = simpleItemAnimator
         mArchivedItemsRecyclerView.layoutManager =
-                if (!ViewUtils.Companion.isTablet(this) && ViewUtils.Companion.isPortrait(this)) LinearLayoutManager(this)
-                else GridLayoutManager(this, if (ViewUtils.Companion.isTablet(this) && !ViewUtils.Companion.isPortrait(this)) 3 else 2)
+                if (!ViewUtils.isTablet(this) && ViewUtils.isPortrait(this)) LinearLayoutManager(this)
+                else GridLayoutManager(this, if (ViewUtils.isTablet(this) && !ViewUtils.isPortrait(this)) 3 else 2)
         mArchivedItemsAdapter = ArchiveItemsAdapter()
         mArchivedItemsAdapter.setListener(object : ArchiveItemsAdapter.Listener {
 
@@ -150,7 +164,7 @@ class ArchiveActivity : ActivityBase() {
 
                                     detailsDialog?.dismiss()
 
-                                    AndroidMediaUtils.Companion.play(this@ArchiveActivity, item)
+                                    AndroidMediaUtils.play(this@ArchiveActivity, item)
                                 }
 
                             })
