@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,35 +14,56 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.SearchView
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import dev.hugomfandrade.mediadownloader.android.DevConstants
+import dev.hugomfandrade.mediadownloader.android.R
 import dev.hugomfandrade.mediadownloader.android.app.ActivityBase
 import dev.hugomfandrade.mediadownloader.android.app.archive.ArchiveActivity
 import dev.hugomfandrade.mediadownloader.android.app.settings.SettingsActivity
+import dev.hugomfandrade.mediadownloader.android.databinding.ActivityMainBinding
 import dev.hugomfandrade.mediadownloader.android.network.AndroidDownloadableItem
 import dev.hugomfandrade.mediadownloader.android.network.DownloadManager
 import dev.hugomfandrade.mediadownloader.android.network.DownloadableItemAction
 import dev.hugomfandrade.mediadownloader.android.utils.AndroidMediaUtils
+import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
 import dev.hugomfandrade.mediadownloader.android.utils.ListenableFuture
 import dev.hugomfandrade.mediadownloader.android.utils.VersionUtils
 import dev.hugomfandrade.mediadownloader.android.utils.ViewUtils
-import dev.hugomfandrade.mediadownloader.android.R
-import dev.hugomfandrade.mediadownloader.android.databinding.ActivityMainBinding
 import dev.hugomfandrade.mediadownloader.core.DownloadableItem
 import dev.hugomfandrade.mediadownloader.core.parsing.ParsingData
 import dev.hugomfandrade.mediadownloader.core.parsing.ParsingTaskResult
 import dev.hugomfandrade.mediadownloader.core.parsing.pagination.PaginationParserTask
 import dev.hugomfandrade.mediadownloader.core.utils.FilenameLockerAdapter
-import androidx.core.graphics.toColorInt
-import androidx.core.net.toUri
-import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
-import dev.hugomfandrade.mediadownloader.ui.shared.DrawerItem
 import dev.hugomfandrade.mediadownloader.ui.shared.Header
 import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawer
+import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
+import dev.hugomfandrade.mediadownloader.ui.shared.QuickAccessItem
+import dev.hugomfandrade.mediadownloader.ui.shared.Toolbar
 import dev.hugomfandrade.mediadownloader.ui.shared.iconArchive
 import dev.hugomfandrade.mediadownloader.ui.shared.iconRTPPlay
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSIC
@@ -49,8 +71,6 @@ import dev.hugomfandrade.mediadownloader.ui.shared.iconSICNoticias
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSICRadical
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSettings
 import dev.hugomfandrade.mediadownloader.ui.shared.iconTVI
-import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
-import dev.hugomfandrade.mediadownloader.ui.shared.QuickAccessItem
 
 class MainActivity : ActivityBase() {
 
@@ -137,7 +157,7 @@ class MainActivity : ActivityBase() {
         editText?.setHintTextColor("#90ffffff".toColorInt())
 
         //
-        val devUrl: String? = DevConstants.Companion.url
+        val devUrl: String? = DevConstants.url
         if (devUrl != null) {
             searchView.setQuery(devUrl, false)
             editText?.setSelection(editText.text.length)
@@ -179,9 +199,45 @@ class MainActivity : ActivityBase() {
         }
     }
 
+
     private fun initializeUI() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        val toolbarComposeView: ComposeView = findViewById(R.id.appbar_compose)
+        toolbarComposeView.setContent {
+
+            LegacyAppCompatTheme {
+
+                val drawerArrow = DrawerArrowDrawable(this).apply { color = Color.WHITE }
+                val drawerProgress = mutableFloatStateOf(0f)
+
+                binding.drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+                    override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                        drawerProgress.floatValue = slideOffset
+                    }
+                })
+
+                Toolbar(
+                    title = getString(R.string.app_name).uppercase(),
+                    navigationIcon = {
+                        AnimatedDrawerNavigationIcon(
+                            drawerArrow,
+                            progress = drawerProgress.value,
+                            onClick = {
+                                // 👇 Forward navigation click to DrawerToggle
+                                val drawer = binding.drawerLayout
+                                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                                    drawer.closeDrawer(GravityCompat.START)
+                                } else {
+                                    drawer.openDrawer(GravityCompat.START)
+                                }
+                            }
+                        )
+                    }
+                )
+            }
+        }
 
         setSupportActionBar(findViewById(R.id.toolbar))
 
@@ -303,7 +359,7 @@ class MainActivity : ActivityBase() {
         val wasIconified = searchView.isIconified
         if (!wasIconified) {
             searchView.isIconified = true
-            ViewUtils.Companion.hideSoftKeyboard(searchView)
+            ViewUtils.hideSoftKeyboard(searchView)
             invalidateOptionsMenu()
             mDrawerToggle?.onDrawerSlide(binding.drawerLayout, 0f)
         }
@@ -354,21 +410,21 @@ class MainActivity : ActivityBase() {
 
                                 detailsDialog?.dismiss()
 
-                                AndroidMediaUtils.Companion.openUrl(this@MainActivity, item)
+                                AndroidMediaUtils.openUrl(this@MainActivity, item)
                             }
 
                             override fun onShowInFolder(item: AndroidDownloadableItem) {
 
                                 detailsDialog?.dismiss()
 
-                                AndroidMediaUtils.Companion.showInFolderIntent(this@MainActivity, item)
+                                AndroidMediaUtils.showInFolderIntent(this@MainActivity, item)
                             }
 
                             override fun onPlay(item: AndroidDownloadableItem) {
 
                                 detailsDialog?.dismiss()
 
-                                AndroidMediaUtils.Companion.play(this@MainActivity, item)
+                                AndroidMediaUtils.play(this@MainActivity, item)
                             }
 
                         })
@@ -430,7 +486,7 @@ class MainActivity : ActivityBase() {
             override fun onFailed(errorMessage: String) {
 
                 runOnUiThread {
-                    ViewUtils.Companion.showSnackBar(binding.root, getString(R.string.unable_to_parse))
+                    ViewUtils.showSnackBar(binding.root, getString(R.string.unable_to_parse))
 
                     parsingDialog?.dismiss()
                     parsingDialog = null
@@ -481,7 +537,7 @@ class MainActivity : ActivityBase() {
 
                         runOnUiThread {
 
-                            ViewUtils.Companion.showSnackBar(binding.root, getString(R.string.unable_to_parse_pagination))
+                            ViewUtils.showSnackBar(binding.root, getString(R.string.unable_to_parse_pagination))
 
                             parsingDialog?.dismiss()
                             parsingDialog = null
@@ -505,7 +561,7 @@ class MainActivity : ActivityBase() {
                     override fun onFailed(errorMessage: String) {
 
                         runOnUiThread {
-                            ViewUtils.Companion.showSnackBar(binding.root, getString(R.string.unable_to_parse_pagination))
+                            ViewUtils.showSnackBar(binding.root, getString(R.string.unable_to_parse_pagination))
 
                             parsingDialog?.dismiss()
                             parsingDialog = null
@@ -554,17 +610,52 @@ class MainActivity : ActivityBase() {
                 runOnUiThread {
                     val message = getString(R.string.finished_downloading) + " " + downloadableItem.filename
                     Log.e(TAG, message)
-                    ViewUtils.Companion.showSnackBar(binding.root, message)
+                    ViewUtils.showSnackBar(binding.root, message)
                 }
                 downloadableItem.removeDownloadStateChangeListener(this)
 
                 // upload history
                 val action = uploadHistoryMap[downloadableItem.id]?: return
 
-                VersionUtils.Companion.uploadHistory(this@MainActivity, action)
+                VersionUtils.uploadHistory(this@MainActivity, action)
             }
         }
     }
 
     private val uploadHistoryMap : HashMap<Int, DownloadableItemAction> = HashMap()
+}
+
+// Android-specific
+@Composable
+fun AnimatedDrawerNavigationIcon(drawerArrow: DrawerArrowDrawable,
+                                 progress: Float,
+                                 onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        drawerArrow.progress = progress
+
+        val painter = AndroidDrawablePainter(drawerArrow)
+        Icon(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = androidx.compose.ui.graphics.Color.White
+        )
+    }
+}
+
+class AndroidDrawablePainter(private val drawable: Drawable) : Painter() {
+    override val intrinsicSize get() = Size(
+        drawable.intrinsicWidth.toFloat(),
+        drawable.intrinsicHeight.toFloat())
+
+    override fun DrawScope.onDraw() {
+        // set bounds to current canvas size (in px)
+        val w = size.width.toInt()
+        val h = size.height.toInt()
+        drawable.setBounds(0, 0, w, h)
+
+        drawIntoCanvas { canvas ->
+            drawable.draw(canvas.nativeCanvas)
+        }
+    }
 }
