@@ -112,7 +112,7 @@ fun OptionItemView(optionItem: OptionItem, onClick: (DrawerItem) -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = optionItem.resource!!,
+                painter = optionItem.resource,
                 contentDescription = optionItem.title,
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                 modifier = Modifier
@@ -142,7 +142,6 @@ fun QuickAccessItemView(quickAccessItem: QuickAccessItem, onClick: (DrawerItem) 
             .padding(vertical = 4.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Res
 
         // Drawer item row
         Row(
@@ -154,7 +153,7 @@ fun QuickAccessItemView(quickAccessItem: QuickAccessItem, onClick: (DrawerItem) 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = quickAccessItem.resource!!,
+                painter = quickAccessItem.resource,
                 contentDescription = quickAccessItem.title,
                 modifier = Modifier
                     .size(36.dp)

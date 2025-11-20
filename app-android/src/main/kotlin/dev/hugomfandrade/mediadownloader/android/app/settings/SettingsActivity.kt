@@ -7,18 +7,19 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dev.hugomfandrade.mediadownloader.android.R
 import dev.hugomfandrade.mediadownloader.android.utils.AndroidMediaUtils
+import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
+import dev.hugomfandrade.mediadownloader.ui.shared.Toolbar
+import dev.hugomfandrade.mediadownloader.ui.shared.ToolbarBackButton
 
 class SettingsActivity : AppCompatActivity() {
 
     companion object {
-
-        private val TAG = SettingsActivity::class.java.simpleName
 
         private const val REQUEST_EXTERNAL_ACCESS = 100
 
@@ -32,28 +33,22 @@ class SettingsActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_settings)
 
-        setSupportActionBar(findViewById(R.id.toolbar))
-
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.title = getString(R.string.settings)
-            actionBar.setDisplayHomeAsUpEnabled(true)
+        val toolbarComposeView: ComposeView = findViewById(R.id.appbar_compose)
+        toolbarComposeView.setContent {
+            LegacyAppCompatTheme {
+                Toolbar(
+                    title = getString(R.string.settings).uppercase(),
+                    navigationIcon = {
+                        ToolbarBackButton(onClick = { onBackPressedDispatcher.onBackPressed() })
+                    }
+                )
+            }
         }
 
         supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.content_frame, SettingsFragment())
                 .commit()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            onBackPressed()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
@@ -67,15 +62,15 @@ class SettingsActivity : AppCompatActivity() {
             val context = activity as Context
 
             val filePicker : Preference = findPreference(getString(R.string.key_directory_name)) ?: return
-            filePicker.setDefaultValue(AndroidMediaUtils.Companion.getDownloadsDirectory(context))
-            filePicker.summary = AndroidMediaUtils.Companion.getDownloadsDirectory(context).toString().replace("/storage/emulated/0", "")
+            filePicker.setDefaultValue(AndroidMediaUtils.getDownloadsDirectory(context))
+            filePicker.summary = AndroidMediaUtils.getDownloadsDirectory(context).toString().replace("/storage/emulated/0", "")
             filePicker.onPreferenceClickListener = Preference.OnPreferenceClickListener {
 
                 val i = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 i.addCategory(Intent.CATEGORY_DEFAULT)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, AndroidMediaUtils.Companion.getDownloadsDirectory(context))
+                    i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, AndroidMediaUtils.getDownloadsDirectory(context))
                 }
 
                 i.putExtra("android.content.extra.SHOW_ADVANCED", true)
@@ -96,7 +91,7 @@ class SettingsActivity : AppCompatActivity() {
                 val path: String? = SettingsUtils.getPath(activity, docUri)
 
                 if (path != null) {
-                    AndroidMediaUtils.Companion.putDownloadsDirectory(activity, path)
+                    AndroidMediaUtils.putDownloadsDirectory(activity, path)
 
                     filePicker?.summary = AndroidMediaUtils.Companion.getDownloadsDirectory(activity).toString().replace("/storage/emulated/0", "")
                 }
