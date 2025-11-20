@@ -13,14 +13,21 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.SearchView
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -63,7 +70,9 @@ import dev.hugomfandrade.mediadownloader.ui.shared.Header
 import dev.hugomfandrade.mediadownloader.ui.shared.NavigationDrawer
 import dev.hugomfandrade.mediadownloader.ui.shared.OptionItem
 import dev.hugomfandrade.mediadownloader.ui.shared.QuickAccessItem
+import dev.hugomfandrade.mediadownloader.ui.shared.SearchBarOverlay
 import dev.hugomfandrade.mediadownloader.ui.shared.Toolbar
+import dev.hugomfandrade.mediadownloader.ui.shared.ToolbarBackButton
 import dev.hugomfandrade.mediadownloader.ui.shared.iconArchive
 import dev.hugomfandrade.mediadownloader.ui.shared.iconRTPPlay
 import dev.hugomfandrade.mediadownloader.ui.shared.iconSIC
@@ -209,33 +218,90 @@ class MainActivity : ActivityBase() {
 
             LegacyAppCompatTheme {
 
-                val drawerArrow = DrawerArrowDrawable(this).apply { color = Color.WHITE }
-                val drawerProgress = mutableFloatStateOf(0f)
+                var searching by remember { mutableStateOf(false) }
+                var query by remember { mutableStateOf("") }
 
-                binding.drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
-                    override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                        drawerProgress.floatValue = slideOffset
+                val drawerArrow = DrawerArrowDrawable(this).apply { color = Color.WHITE }
+                var drawerProgress by remember { mutableFloatStateOf(0f) }
+
+                onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        if (!isEnabled) return
+
+                        if (searching) {
+                            searching = false
+                        }
                     }
                 })
 
-                Toolbar(
-                    title = getString(R.string.app_name).uppercase(),
-                    navigationIcon = {
-                        AnimatedDrawerNavigationIcon(
-                            drawerArrow,
-                            progress = drawerProgress.value,
-                            onClick = {
-                                // 👇 Forward navigation click to DrawerToggle
-                                val drawer = binding.drawerLayout
-                                if (drawer.isDrawerOpen(GravityCompat.START)) {
-                                    drawer.closeDrawer(GravityCompat.START)
-                                } else {
-                                    drawer.openDrawer(GravityCompat.START)
-                                }
+                binding.drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+                    override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                        drawerProgress = slideOffset
+                    }
+
+                    override fun onDrawerStateChanged(newState: Int) {
+                        super.onDrawerStateChanged(newState)
+                        searching = false
+                    }
+                })
+
+                val toolbarText = if (searching) "" else getString(R.string.app_name).uppercase()
+                val animatedNavigationIcon = @Composable {
+                    AnimatedDrawerNavigationIcon(
+                        drawerArrow,
+                        progress = drawerProgress,
+                        onClick = {
+                            // Forward navigation click to DrawerToggle
+                            val drawer = binding.drawerLayout
+                            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                                drawer.closeDrawer(GravityCompat.START)
+                            } else {
+                                drawer.openDrawer(GravityCompat.START)
                             }
-                        )
+                        }
+                    )
+                }
+
+                Toolbar(
+                    title = toolbarText,
+                    navigationIcon = {
+                        if (searching)
+                            ToolbarBackButton(onClick = {
+                                searching = false
+                                // onQueryChange("")
+                                // onSearchFocused(false)
+                                onBackPressed()
+                            })
+                        else
+                            animatedNavigationIcon.invoke()
+                    },
+                    actions = {
+                        if (!searching) {
+                            IconButton(onClick = {
+                                searching = true
+                                // onSearchFocused(true)
+                            }) {
+                                Icon(Icons.Default.Search, contentDescription = null, tint = androidx.compose.ui.graphics.Color.White)
+                            }
+                        }
                     }
                 )
+
+                if (searching) {
+                    SearchBarOverlay(
+                        query = query,
+                        // onQueryChange = onQueryChange,
+                        onClose = {
+                            searching = false
+                            // onQueryChange("")
+                            // onSearchFocused(false)
+                        },
+                        onSearch = {
+                            query -> doDownload(query)
+                            searching = false
+                        }
+                    )
+                }
             }
         }
 
