@@ -9,14 +9,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
-import androidx.appcompat.widget.SearchView
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -36,7 +32,6 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
@@ -83,7 +78,6 @@ import dev.hugomfandrade.mediadownloader.ui.shared.iconTVI
 
 class MainActivity : ActivityBase() {
 
-    private lateinit var searchView: SearchView
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var mDownloadItemsRecyclerView: RecyclerView
@@ -94,6 +88,8 @@ class MainActivity : ActivityBase() {
     private var mDrawerToggle: ActionBarDrawerToggle? = null
     private var mPendingRunnable: Runnable? = null
     private val mHandler = Handler(Looper.getMainLooper())
+
+    private var query = mutableStateOf("")
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -130,64 +126,8 @@ class MainActivity : ActivityBase() {
         mDrawerToggle?.onConfigurationChanged(newConfig)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-
-        // set up SearchView
-        searchView = menu.findItem(R.id.app_search_bar).actionView as SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                doDownload(searchView.query.toString())
-                iconifySearchView()
-                return false
-            }
-
-            override fun onQueryTextChange(p0: String?): Boolean {
-                return false
-            }
-        })
-        searchView.setOnCloseListener {
-            mDrawerToggle?.onDrawerSlide(binding.drawerLayout, 0f)
-            false
-        }
-        searchView.setOnSearchClickListener {
-            mDrawerToggle?.onDrawerSlide(binding.drawerLayout, 1f)
-        }
-        searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                iconifySearchView()
-            }
-        }
-
-        //
-        val editText: EditText? = searchView.findViewById(androidx.appcompat.R.id.search_src_text)
-        editText?.setTextColor(Color.WHITE)
-        editText?.setHintTextColor("#90ffffff".toColorInt())
-
-        //
-        val devUrl: String? = DevConstants.url
-        if (devUrl != null) {
-            searchView.setQuery(devUrl, false)
-            editText?.setSelection(editText.text.length)
-            searchView.isIconified = false
-        } else {
-            ViewUtils.hideSoftKeyboardAndClearFocus(searchView)
-        }
-
-        extractActionSendIntentAndUpdateUI(intent)
-
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val drawerToggle = mDrawerToggle
-
-        if (item.itemId == android.R.id.home) {
-            if (!iconifySearchView()) {
-                return true
-            }
-        }
 
         if (drawerToggle != null && drawerToggle.onOptionsItemSelected(item)) return true
 
@@ -198,9 +138,6 @@ class MainActivity : ActivityBase() {
         // close if drawer is open
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
-        }
-        // iconify search view if showing
-        else if (!iconifySearchView()) {
         }
         // back press
         else {
@@ -218,21 +155,19 @@ class MainActivity : ActivityBase() {
 
             LegacyAppCompatTheme {
 
+                //
+                val devUrl: String? = DevConstants.url
+                if (devUrl != null) {
+                    query.value = devUrl
+                } else {
+                    ViewUtils.hideSoftKeyboardAndClearFocus(binding.root)
+                }
+
+                query = remember { mutableStateOf("") }
                 var searching by remember { mutableStateOf(false) }
-                var query by remember { mutableStateOf("") }
 
                 val drawerArrow = DrawerArrowDrawable(this).apply { color = Color.WHITE }
                 var drawerProgress by remember { mutableFloatStateOf(0f) }
-
-                onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        if (!isEnabled) return
-
-                        if (searching) {
-                            searching = false
-                        }
-                    }
-                })
 
                 binding.drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
                     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
@@ -268,9 +203,10 @@ class MainActivity : ActivityBase() {
                         if (searching)
                             ToolbarBackButton(onClick = {
                                 searching = false
+                                query.value = ""
                                 // onQueryChange("")
                                 // onSearchFocused(false)
-                                onBackPressed()
+                                // onBackPressed()
                             })
                         else
                             animatedNavigationIcon.invoke()
@@ -289,10 +225,10 @@ class MainActivity : ActivityBase() {
 
                 if (searching) {
                     SearchBarOverlay(
-                        query = query,
-                        // onQueryChange = onQueryChange,
+                        query = query.value,
                         onClose = {
                             searching = false
+                            query.value = ""
                             // onQueryChange("")
                             // onSearchFocused(false)
                         },
@@ -303,15 +239,6 @@ class MainActivity : ActivityBase() {
                     )
                 }
             }
-        }
-
-        setSupportActionBar(findViewById(R.id.toolbar))
-
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.title = getString(R.string.app_name)
-            actionBar.setDisplayHomeAsUpEnabled(true)
-            actionBar.setHomeButtonEnabled(false)
         }
 
         // ActionBarDrawerToggle ties together the the proper interactions
@@ -329,12 +256,6 @@ class MainActivity : ActivityBase() {
                     mHandler.post(pendingRunnable)
                     mPendingRunnable = null
                 }
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {
-                super.onDrawerStateChanged(newState)
-
-                iconifySearchView()
             }
         }
         binding.drawerLayout.addDrawerListener(drawerToggle)
@@ -416,20 +337,6 @@ class MainActivity : ActivityBase() {
         }).attachToRecyclerView(mDownloadItemsRecyclerView)
 
         binding.emptyListViewGroup.visibility = if (mDownloadItemsAdapter.itemCount == 0) View.VISIBLE else View.INVISIBLE
-    }
-
-    /**
-     * tries to iconify search view, and syncs with toggle. returns the previous iconified state
-     */
-    private fun iconifySearchView(): Boolean {
-        val wasIconified = searchView.isIconified
-        if (!wasIconified) {
-            searchView.isIconified = true
-            ViewUtils.hideSoftKeyboard(searchView)
-            invalidateOptionsMenu()
-            mDrawerToggle?.onDrawerSlide(binding.drawerLayout, 0f)
-        }
-        return wasIconified
     }
 
     private fun displayDownloadableItem(action: DownloadableItemAction) {
@@ -515,11 +422,7 @@ class MainActivity : ActivityBase() {
 
         intent.removeExtra(Intent.EXTRA_TEXT)
 
-        //
-        val editText: EditText? = searchView.findViewById(androidx.appcompat.R.id.search_src_text)
-
-        searchView.setQuery(url, true)
-        editText?.setSelection(editText.text.length)
+        query.value = url
     }
 
     private var parsingDialog : ParsingDialog? = null
@@ -662,7 +565,7 @@ class MainActivity : ActivityBase() {
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         if (permissions.contains(permission) && PermissionUtils.hasGrantedPermission(this, permission)) {
 
-            doDownload(searchView.query.toString())
+            doDownload(query.value)
         }
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

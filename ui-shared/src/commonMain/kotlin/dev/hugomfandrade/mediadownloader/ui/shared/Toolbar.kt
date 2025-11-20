@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -106,6 +108,17 @@ fun ToolbarBackButton(onClick: () -> Unit = {}) {
         Icon(
             imageVector = Icons.Default.ArrowBack,
             tint = Color.White,
+            contentDescription = "Back"
+        )
+    }
+}
+
+@Composable
+fun ToolbarBackButton2(onClick: () -> Unit = {}) {
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            tint = Color.Red,
             contentDescription = "Back"
         )
     }
@@ -199,93 +212,106 @@ fun SearchBarOverlay(
     onClose: () -> Unit,
     onSearch: (String) -> Unit = {}
 ) {
-    Surface(
-        tonalElevation = 4.dp,
-        color = Color.Transparent,
-        modifier = Modifier
-            .padding(top = 24.dp)
-            .fillMaxWidth()
-            .height(56.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize().padding(start = 16.dp)
+    Row(modifier = Modifier
+        .fillMaxSize()
+        .padding(top = 26.dp)) {
+        Spacer(Modifier.width(60.dp))
+        Surface(
+            tonalElevation = 4.dp,
+            color = Color.Transparent,
+            modifier = Modifier
+                .fillMaxWidth()
+                .requiredHeight(56.dp)
         ) {
-            val searchTextColor = Color.White
-            val searchHintColor = Color(0x90FFFFFF)
-            var queryState by remember { mutableStateOf(query) }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val searchTextColor = Color.White
+                val searchHintColor = Color(0x90FFFFFF)
+                var queryState by remember { mutableStateOf(query) }
 
-            val focusRequester = remember { FocusRequester() }
-            var active by remember { mutableStateOf(true) }
+                val focusRequester = remember { FocusRequester() }
+                var active by remember { mutableStateOf(true) }
 
-            val focusManager = LocalFocusManager.current
-            val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+                val focusManager = LocalFocusManager.current
+                val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
-            // detect when keyboard is dismissed
-            LaunchedEffect(imeVisible) {
-                if (active) return@LaunchedEffect
-                if (!imeVisible) {
-                    // Keyboard dismissed manually
-                    onClose()
-                    focusManager.clearFocus()
-                }
-            }
-
-            // Automatically request focus (and open keyboard)
-            LaunchedEffect(active) {
-                if (active) {
-                    focusRequester.requestFocus()
-                    active = false
-                }
-            }
-
-            Spacer(Modifier.width(60.dp))
-            TextField(
-                value = queryState,
-                onValueChange = {
-                    queryState = it
-                    onQueryChange(queryState)
-                },
-                singleLine = true,
-                modifier = Modifier.weight(1f)
-                    .horizontalScroll(rememberScrollState())
-                    .focusRequester(focusRequester),
-                placeholder = { Text("Url (eg. RTP Play, SIC, Sapo)", color = searchHintColor) },
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = searchTextColor,
-                    unfocusedTextColor = searchTextColor,
-                    disabledTextColor = searchTextColor,
-
-                    focusedPlaceholderColor = searchHintColor,
-                    unfocusedPlaceholderColor = searchHintColor,
-
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-
-                    cursorColor = MaterialTheme.colorScheme.tertiary,
-
-                    disabledContainerColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
-                ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        onSearch(queryState)
-                        active = false
-
+                // detect when keyboard is dismissed
+                LaunchedEffect(imeVisible) {
+                    if (active) return@LaunchedEffect
+                    if (!imeVisible) {
+                        // Keyboard dismissed manually
+                        onClose()
+                        focusManager.clearFocus()
                     }
-                )
-            )
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
                 }
-            } else {
-                IconButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
+
+                // Automatically request focus (and open keyboard)
+                LaunchedEffect(active) {
+                    if (active) {
+                        focusRequester.requestFocus()
+                        active = false
+                    }
+                }
+
+                // ToolbarBackButton2 { onClose() }
+                TextField(
+                    value = queryState,
+                    onValueChange = {
+                        queryState = it
+                        onQueryChange(queryState)
+                    },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                        .horizontalScroll(rememberScrollState())
+                        .focusRequester(focusRequester),
+                    placeholder = {
+                        Text(
+                            "Url (eg. RTP Play, SIC, Sapo)",
+                            color = searchHintColor
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = searchTextColor,
+                        unfocusedTextColor = searchTextColor,
+                        disabledTextColor = searchTextColor,
+
+                        focusedPlaceholderColor = searchHintColor,
+                        unfocusedPlaceholderColor = searchHintColor,
+
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+
+                        cursorColor = MaterialTheme.colorScheme.tertiary,
+                        selectionColors = TextSelectionColors(
+                            MaterialTheme.colorScheme.tertiary,
+                            Color.Transparent
+                        ),
+
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    ),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            onSearch(queryState)
+                            active = false
+
+                        }
+                    )
+                )
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
+                    }
+                } else {
+                    IconButton(onClick = onClose) {
+                        Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
+                    }
                 }
             }
         }

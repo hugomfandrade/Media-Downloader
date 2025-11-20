@@ -15,20 +15,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
 
-            <include
-                layout="@layout/layout_toolbar" />
-
             <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/appbar_compose"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="72dp"
                 android:elevation="4dp" />
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="144dp"
+                android:layout_marginTop="72dp"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <androidx.recyclerview.widget.RecyclerView
