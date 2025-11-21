@@ -5,10 +5,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import dev.hugomfandrade.mediadownloader.android.utils.AndroidNetworkUtils
 import dev.hugomfandrade.mediadownloader.android.utils.ViewUtils
 import dev.hugomfandrade.mediadownloader.android.R
-
+import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
+import dev.hugomfandrade.mediadownloader.ui.shared.NoNetworkPanel
 
 abstract class ActivityBase : AppCompatActivity() {
 
@@ -22,7 +24,7 @@ abstract class ActivityBase : AppCompatActivity() {
      */
     private var mNetworkBroadcastReceiver: BroadcastReceiver? = null
 
-    private var tvNoNetworkConnection: View? = null
+    private var noNetworkConnection: View? = null
 
     private val iNetworkListener = object : AndroidNetworkUtils.INetworkBroadcastReceiver {
 
@@ -30,7 +32,7 @@ abstract class ActivityBase : AppCompatActivity() {
 
             onNetworkStateChanged(isNetworkAvailable)
 
-            ViewUtils.Companion.setHeightDpAnim(applicationContext, checkNotNull(tvNoNetworkConnection), if (isNetworkAvailable) 0 else 20)
+            ViewUtils.setHeightDpAnim(applicationContext, checkNotNull(noNetworkConnection), if (isNetworkAvailable) 0 else 20)
         }
     }
 
@@ -61,12 +63,20 @@ abstract class ActivityBase : AppCompatActivity() {
     private fun initializeNetworkFooter() {
 
         if (mNetworkBroadcastReceiver == null) {
-            mNetworkBroadcastReceiver = AndroidNetworkUtils.Companion.register(this, iNetworkListener)
+            mNetworkBroadcastReceiver = AndroidNetworkUtils.register(this, iNetworkListener)
         }
 
-        tvNoNetworkConnection = findViewById(R.id.tv_no_network_connection)
+        val noNetworkConnectionCompose = findViewById<ComposeView>(R.id.tv_no_network_connection_compose)
 
-        ViewUtils.Companion.setHeightDp(this, tvNoNetworkConnection, if (AndroidNetworkUtils.Companion.isNetworkAvailable(this)) 0 else 20)
+        noNetworkConnectionCompose?.setContent {
+            LegacyAppCompatTheme {
+                NoNetworkPanel(getString(R.string.no_network_connection))
+            }
+        }
+
+        this.noNetworkConnection = noNetworkConnectionCompose
+
+        ViewUtils.setHeightDp(this, noNetworkConnection, if (AndroidNetworkUtils.isNetworkAvailable(this)) 0 else 20)
     }
 
     /**
@@ -77,7 +87,7 @@ abstract class ActivityBase : AppCompatActivity() {
         super.onDestroy()
 
         if (mNetworkBroadcastReceiver != null) {
-            AndroidNetworkUtils.Companion.unregister(this, checkNotNull(mNetworkBroadcastReceiver))
+            AndroidNetworkUtils.unregister(this, checkNotNull(mNetworkBroadcastReceiver))
             mNetworkBroadcastReceiver = null
         }
     }

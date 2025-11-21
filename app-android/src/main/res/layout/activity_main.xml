@@ -2,10 +2,6 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
-        <variable name="MainActivity" type="dev.hugomfandrade.mediadownloader.android.app.main.MainActivity"/>
-    </data>
-
     <dev.hugomfandrade.mediadownloader.android.app.main.NavigationDrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
@@ -24,14 +20,13 @@
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="72dp"
+                android:layout_marginTop="80dp"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/download_items_recycler_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_above="@id/tv_no_network_connection" />
+                    android:layout_height="match_parent" />
 
                 <LinearLayout
                     android:id="@+id/empty_list_view_group"
@@ -55,9 +50,10 @@
 
                 </LinearLayout>
 
-                <include
-                    android:id="@+id/tv_no_network_connection"
-                    layout="@layout/layout_no_network_connection" />
+                <androidx.compose.ui.platform.ComposeView
+                    android:id="@+id/tv_no_network_connection_compose"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -52,6 +52,9 @@ private constructor() {
                 for (network in networks) {
                     val networkInfo = connMgr.getNetworkInfo(network) ?: continue
 
+                    // internal for calls
+                    if (networkInfo.extraInfo.contentEquals("ims")) continue
+
                     if (networkInfo.type == ConnectivityManager.TYPE_WIFI && networkInfo.isAvailable) {
                         wifiAvailability = true
                     } else if (networkInfo.type == ConnectivityManager.TYPE_MOBILE && networkInfo.isAvailable) {

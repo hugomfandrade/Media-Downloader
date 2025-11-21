@@ -19,15 +19,15 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <include
-                android:id="@+id/tv_no_network_connection"
-                layout="@layout/layout_no_network_connection" />
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/tv_no_network_connection_compose"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/archive_items_recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@id/tv_no_network_connection" />
+                android:layout_height="match_parent" />
 
             <LinearLayout
                 android:id="@+id/empty_list_view_group"

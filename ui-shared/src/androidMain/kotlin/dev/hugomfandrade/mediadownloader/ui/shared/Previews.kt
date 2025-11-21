@@ -9,6 +9,14 @@ import org.jetbrains.compose.resources.painterResource
 
 @Preview
 @Composable
+fun NoNetworkPanelPreview() {
+    MaterialTheme {
+        NoNetworkPanel("no network")
+    }
+}
+
+@Preview
+@Composable
 fun NavigationDrawerPreview() {
     val drawerItems = arrayOf(
         OptionItem("Archive", painterResource(Res.drawable.ic_archive), {}),
