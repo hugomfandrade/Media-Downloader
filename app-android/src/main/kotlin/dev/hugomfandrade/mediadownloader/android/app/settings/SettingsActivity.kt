@@ -1,27 +1,28 @@
 package dev.hugomfandrade.mediadownloader.android.app.settings
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.platform.ComposeView
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import dev.hugomfandrade.mediadownloader.android.R
 import dev.hugomfandrade.mediadownloader.android.utils.AndroidMediaUtils
 import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
+import dev.hugomfandrade.mediadownloader.ui.shared.PreferenceData
+import dev.hugomfandrade.mediadownloader.ui.shared.SettingsScreen
 import dev.hugomfandrade.mediadownloader.ui.shared.Toolbar
 import dev.hugomfandrade.mediadownloader.ui.shared.ToolbarBackButton
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : ComponentActivity() {
 
     companion object {
-
-        private const val REQUEST_EXTERNAL_ACCESS = 100
 
         fun makeIntent(context: Context) : Intent {
             return Intent(context, SettingsActivity::class.java)
@@ -31,71 +32,54 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_settings)
+        val directoryUri = AndroidMediaUtils.getDownloadsDirectory(this)
+        val directory = directoryUri.cleanPrefix()
+        val title = getString(R.string.directory_storage_title)
+        val summary = mutableStateOf(directory)
 
-        val toolbarComposeView: ComposeView = findViewById(R.id.appbar_compose)
-        toolbarComposeView.setContent {
+        val openDocumentTreeLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+                if (uri != null) {
+                    // Grant persistent permission
+                    contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+
+                    val docUri: Uri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri))
+                    val path: String? = SettingsUtils.getPath(this, docUri)
+
+                    AndroidMediaUtils.putDownloadsDirectory(this, path?:"")
+
+                    summary.value = AndroidMediaUtils.getDownloadsDirectory(this).cleanPrefix()
+                }
+            }
+
+        setContent {
+
+            val items = listOf(
+                PreferenceData.ClickablePreference(title, summary.value) {
+                    openDocumentTreeLauncher.launch(AndroidMediaUtils.getDownloadsDirectory(this))
+                }
+            )
+
             LegacyAppCompatTheme {
-                Toolbar(
-                    title = getString(R.string.settings).uppercase(),
-                    navigationIcon = {
-                        ToolbarBackButton(onClick = { onBackPressedDispatcher.onBackPressed() })
-                    }
-                )
-            }
-        }
 
-        supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.content_frame, SettingsFragment())
-                .commit()
-    }
-
-    class SettingsFragment : PreferenceFragmentCompat() {
-
-        private var filePicker: Preference? = null
-
-        override fun onCreatePreferences(bundle : Bundle?, rootKey : String?) {
-
-            setPreferencesFromResource(R.xml.preferences_main, rootKey)
-
-            val context = activity as Context
-
-            val filePicker : Preference = findPreference(getString(R.string.key_directory_name)) ?: return
-            filePicker.setDefaultValue(AndroidMediaUtils.getDownloadsDirectory(context))
-            filePicker.summary = AndroidMediaUtils.getDownloadsDirectory(context).toString().replace("/storage/emulated/0", "")
-            filePicker.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-
-                val i = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                i.addCategory(Intent.CATEGORY_DEFAULT)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    i.putExtra(DocumentsContract.EXTRA_INITIAL_URI, AndroidMediaUtils.getDownloadsDirectory(context))
-                }
-
-                i.putExtra("android.content.extra.SHOW_ADVANCED", true)
-                startActivityForResult(Intent.createChooser(i, getString(R.string.directory_storage_summary)), REQUEST_EXTERNAL_ACCESS)
-                true
-            }
-
-            this.filePicker = filePicker
-        }
-
-        override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-            if (requestCode == REQUEST_EXTERNAL_ACCESS && resultCode == RESULT_OK) {
-                val uri = data?.data
-                val activity = activity as Activity
-
-                val docUri: Uri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri))
-                val path: String? = SettingsUtils.getPath(activity, docUri)
-
-                if (path != null) {
-                    AndroidMediaUtils.putDownloadsDirectory(activity, path)
-
-                    filePicker?.summary = AndroidMediaUtils.Companion.getDownloadsDirectory(activity).toString().replace("/storage/emulated/0", "")
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Toolbar(
+                        title = getString(R.string.settings).uppercase(),
+                        navigationIcon = {
+                            ToolbarBackButton(onClick = { onBackPressedDispatcher.onBackPressed() })
+                        }
+                    )
+                    SettingsScreen(items)
                 }
             }
         }
     }
+}
+
+private fun Uri.cleanPrefix(): String {
+    return this.toString().replace("/storage/emulated/0", "")
 }
