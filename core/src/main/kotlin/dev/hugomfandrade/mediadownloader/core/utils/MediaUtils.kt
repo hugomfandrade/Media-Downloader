@@ -115,11 +115,11 @@ private constructor() {
                 internalGetUniqueFilenameAndLock(originalFile, index + 1)
         }
 
-        fun humanReadableByteCount(bytes: Long?, si: Boolean): String {
+        fun humanReadableByteCount(bytes: Long?, si: Boolean = true): String {
             return humanReadableByteCount(bytes ?: 0, si)
         }
 
-        fun humanReadableByteCount(bytes: Long, si: Boolean): String {
+        fun humanReadableByteCount(bytes: Long, si: Boolean = true): String {
             val unit = if (si) 1000 else 1024
             if (bytes < unit) return "$bytes B"
             val exp = (ln(bytes.toDouble()) / ln(unit.toDouble())).toInt()

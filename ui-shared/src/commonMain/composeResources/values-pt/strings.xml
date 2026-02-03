@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- DOWNLOAD -->
+    <string name="did_not_download">download falhado</string>
+    <string name="url_no_longer_exists">URL indisponível</string>
+    <string name="download_cancelled">cancelado</string>
+</resources>

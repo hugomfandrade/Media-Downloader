@@ -1,19 +1,23 @@
 package dev.hugomfandrade.mediadownloader.android.app.main
 
-import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.RecyclerView
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.RecyclerView
 import dev.hugomfandrade.mediadownloader.android.Config
-import dev.hugomfandrade.mediadownloader.android.network.DownloadableItemAction
-import dev.hugomfandrade.mediadownloader.android.utils.ImageHolder
 import dev.hugomfandrade.mediadownloader.android.R
 import dev.hugomfandrade.mediadownloader.android.databinding.DownloadItemBinding
+import dev.hugomfandrade.mediadownloader.android.network.DownloadableItemAction
+import dev.hugomfandrade.mediadownloader.android.utils.ImageHolder
+import dev.hugomfandrade.mediadownloader.android.utils.LegacyAppCompatTheme
 import dev.hugomfandrade.mediadownloader.core.DownloadableItem
 import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
+import dev.hugomfandrade.mediadownloader.ui.shared.DownloadableItemView
 import java.io.File
 import java.util.*
 
@@ -49,6 +53,9 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
 
         val downloadableItemAction: DownloadableItemAction = downloadableItemList[position]
         val downloadableItem: DownloadableItem = downloadableItemAction.item
+
+        holder.bind(downloadableItem)
+        if (true) return
 
         val downloadItemTitleTextView = holder.binding.downloadItemTitleTextView as TextView
         if (downloadItemTitleTextView.text.toString() != downloadableItem.filename) {
@@ -86,10 +93,10 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
                 holder.binding.downloadProgressTextView.text =
                         Math.round(downloadableItem.progress * 100f).toString() + "%"
                 holder.binding.downloadProgressTextView.text =
-                        MediaUtils.humanReadableByteCount(downloadableItem.progressSize, true) + "\\" +
-                                MediaUtils.humanReadableByteCount(downloadableItem.filesize, true)
+                        MediaUtils.humanReadableByteCount(downloadableItem.progressSize) + "\\" +
+                                MediaUtils.humanReadableByteCount(downloadableItem.filesize)
                 holder.binding.downloadProgressTextView.text =
-                        MediaUtils.humanReadableByteCount(downloadableItem.downloadingSpeed.toLong(), true) + "ps, " +
+                        MediaUtils.humanReadableByteCount(downloadableItem.downloadingSpeed.toLong()) + "ps, " +
                                 MediaUtils.humanReadableTime(downloadableItem.remainingTime)
             }
             DownloadableItem.State.End -> {
@@ -137,8 +144,8 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
         holder.binding.cancelDownloadImageView.visibility = if (isInDownloadingState) View.VISIBLE else View.GONE
         holder.binding.refreshDownloadImageView.visibility = if (!isInDownloadingState) View.VISIBLE else View.GONE
 
-        holder.binding.pauseDownloadImageView.visibility = if (Config.Companion.enablePauseResume && isInDownloadingState && isResumed) View.VISIBLE else View.GONE
-        holder.binding.resumeDownloadImageView.visibility = if (Config.Companion.enablePauseResume && isInDownloadingState && !isResumed) View.VISIBLE else View.GONE
+        holder.binding.pauseDownloadImageView.visibility = if (Config.enablePauseResume && isInDownloadingState && isResumed) View.VISIBLE else View.GONE
+        holder.binding.resumeDownloadImageView.visibility = if (Config.enablePauseResume && isInDownloadingState && !isResumed) View.VISIBLE else View.GONE
     }
 
     fun get(index: Int): DownloadableItemAction {
@@ -257,7 +264,7 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
         synchronized(refreshTimerLock) {
             refreshTimer?.cancel()
             refreshTimer = Timer("Refresh-Timer")
-            refreshTimer?.scheduleAtFixedRate(object : TimerTask() {
+            refreshTimer?.schedule(object : TimerTask() {
                 override fun run() {
                     synchronized(downloadableItemList) {
                         downloadableItemList.forEach { item ->
@@ -270,7 +277,7 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
                         }
                     }
                 }
-            }, REFRESH_WINDOW, REFRESH_WINDOW)
+            }, REFRESH_WINDOW)
         }
     }
 
@@ -285,12 +292,40 @@ class DownloadItemsAdapter : RecyclerView.Adapter<DownloadItemsAdapter.ViewHolde
             RecyclerView.ViewHolder(binding.root),
             View.OnClickListener {
 
+        private val downloadableItemState = mutableStateOf<DownloadableItem?>(null)
+
         init {
+            binding.composableItemView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            binding.composableItemView.setContent {
+                LegacyAppCompatTheme {
+                    downloadableItemState.value?.let { downloadableItem ->
+
+                        val itemAction : DownloadableItemAction
+                        synchronized(downloadableItemList) {
+                            itemAction = downloadableItemList[bindingAdapterPosition]
+                        }
+
+                        DownloadableItemView(downloadableItem,
+                            { itemAction.play() },
+                            { itemAction.resume() },
+                            { itemAction.pause() },
+                            { itemAction.cancel() },
+                            { itemAction.refresh() },
+                            )
+                    }
+                }
+            }
+
+            binding.androidxItemView.visibility = View.GONE
             binding.cancelDownloadImageView.setOnClickListener(this)
             binding.pauseDownloadImageView.setOnClickListener(this)
             binding.resumeDownloadImageView.setOnClickListener(this)
             binding.refreshDownloadImageView.setOnClickListener(this)
             binding.root.setOnClickListener(this)
+        }
+
+        fun bind(downloadableItem: DownloadableItem) {
+            downloadableItemState.value = downloadableItem
         }
 
         override fun onClick(v: View?) {

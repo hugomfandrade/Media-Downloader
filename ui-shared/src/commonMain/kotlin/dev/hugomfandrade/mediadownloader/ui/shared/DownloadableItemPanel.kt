@@ -2,6 +2,7 @@ package dev.hugomfandrade.mediadownloader.ui.shared
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,26 +30,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.hugomfandrade.mediadownloader.core.DownloadableItem
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils.Companion.humanReadableByteCount
+import dev.hugomfandrade.mediadownloader.core.utils.MediaUtils.Companion.humanReadableTime
+import io.kamel.core.Resource
+import io.kamel.image.asyncPainterResource
 import media_downloader.ui_shared.generated.resources.Res
+import media_downloader.ui_shared.generated.resources.did_not_download
 import media_downloader.ui_shared.generated.resources.ic_clear
-import media_downloader.ui_shared.generated.resources.ic_launcher_foreground
-import media_downloader.ui_shared.generated.resources.ic_movie
 import media_downloader.ui_shared.generated.resources.ic_pause
 import media_downloader.ui_shared.generated.resources.ic_play
 import media_downloader.ui_shared.generated.resources.ic_refresh
 import media_downloader.ui_shared.generated.resources.media_file_icon
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+const val ENABLE_PAUSE_RESUME: Boolean = false
 
 @Composable
-fun DownloadableItem(item : DownloadableItem) {
+fun DownloadableItemView(item: DownloadableItem,
+                         onPlay: () -> Unit = {},
+                         onResume: () -> Unit = {},
+                         onPause: () -> Unit = {},
+                         onClear: () -> Unit = {},
+                         onRefresh: () -> Unit = {}) {
 
     Row(modifier = Modifier.padding(6.dp)
         .fillMaxWidth()
-        .wrapContentHeight()) {
+        .wrapContentHeight()
+        .clickable{ onPlay() }) {
 
-        Image(
-            painter = painterResource(Res.drawable.media_file_icon),
-            contentDescription = "thumbnail",
+        // thumbnail
+        RemoteImage(
+            url = item.thumbnailUrl,
+            contentDescription = item.filename,
             modifier = Modifier
                 .requiredHeight(60.dp)
                 .requiredWidth(90.dp)
@@ -61,6 +76,7 @@ fun DownloadableItem(item : DownloadableItem) {
 
         Column(modifier = Modifier.fillMaxWidth()) {
 
+            // filename
             Text(
                 text = item.filename?: "",
                 fontSize = 14.sp,
@@ -78,18 +94,65 @@ fun DownloadableItem(item : DownloadableItem) {
                     contentAlignment = Alignment.Center
                 ) {
 
+                    // progress
+
+                    val progress : Float
+                    when (item.state) {
+                        DownloadableItem.State.Start,
+                        DownloadableItem.State.Failed -> {
+                            progress = 0.0f
+                        }
+                        DownloadableItem.State.Downloading -> {
+                            item.updateProgressUtils()
+                            progress = item.progress
+                        }
+                        DownloadableItem.State.End -> {
+                            progress = 1.0f
+                        }
+                        else -> {
+                            progress = 0.0f
+                        }
+                    }
+
                     LinearProgressIndicator(
                         modifier = Modifier.fillMaxSize(),
-                        progress = { item.progress },
+                        progress = { progress },
                         color = MaterialTheme.colorScheme.tertiary,
                         trackColor = MaterialTheme.colorScheme.primary,
                         strokeCap = StrokeCap.Butt,
                         gapSize = 0.dp
                     )
 
+                    // progress text
+
+                    var progressText : String
+                    when (item.state) {
+                        DownloadableItem.State.Start -> {
+                            progressText = ""
+                        }
+                        DownloadableItem.State.Downloading -> {
+                            progressText = Math.round(item.progress * 100f).toString() + "%"
+                            progressText = humanReadableByteCount(item.progressSize) + "\\" +
+                                        humanReadableByteCount(item.filesize)
+                            progressText =
+                                humanReadableByteCount(item.downloadingSpeed.toLong()) + "ps, " +
+                                        humanReadableTime(item.remainingTime)
+                        }
+                        DownloadableItem.State.End -> {
+                            progressText = "100%"
+                            progressText = humanReadableByteCount(item.filesize, true)
+                        }
+                        DownloadableItem.State.Failed -> {
+                            progressText = item.downloadMessage?: stringResource(Res.string.did_not_download)
+                        }
+                        else -> {
+                            progressText = ""
+                        }
+                    }
+
                     Text(
-                        text = "" + item.progress + "%",
-                        fontSize = 14.sp,
+                        text = progressText,
+                        fontSize = 12.sp,
                         textAlign = TextAlign.Center,
                         color = Color.White,
                         modifier = Modifier
@@ -100,46 +163,99 @@ fun DownloadableItem(item : DownloadableItem) {
 
                 }
 
-                IconButton(
-                    modifier = Modifier.size(36.dp),
-                    onClick = { }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_play),
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        contentDescription = "resume"
-                    )
+
+                val isInDownloadingState : Boolean =
+                    item.state == DownloadableItem.State.Downloading ||
+                            item.state == DownloadableItem.State.Paused ||
+                            item.state == DownloadableItem.State.Start
+                val isDownloading : Boolean = item.state == DownloadableItem.State.Downloading //downloadableItemAction.isDownloading()
+                val isResumed : Boolean = item.state == DownloadableItem.State.Start //downloadableItemAction.isResumed()
+
+                if (ENABLE_PAUSE_RESUME && isInDownloadingState) {
+                    if (isResumed) {
+                        IconButton(
+                            modifier = Modifier.size(36.dp),
+                            onClick = onResume) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_play),
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                contentDescription = "resume"
+                            )
+                        }
+                    }
+
+                    if (!isResumed) {
+                        IconButton(
+                            modifier = Modifier.size(36.dp),
+                            onClick = onPause) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_pause),
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                contentDescription = "pause"
+                            )
+                        }
+                    }
                 }
 
-                IconButton(
-                    modifier = Modifier.size(36.dp),
-                    onClick = { }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_pause),
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        contentDescription = "pause"
-                    )
-                }
+                if (isInDownloadingState) {
 
-                IconButton(
-                    modifier = Modifier.size(36.dp),
-                    onClick = { }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_clear),
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        contentDescription = "clear"
-                    )
+                    IconButton(
+                        modifier = Modifier.size(36.dp),
+                        onClick = onClear
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_clear),
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            contentDescription = "cancel"
+                        )
+                    }
                 }
-
-                IconButton(
-                    modifier = Modifier.size(36.dp),
-                    onClick = { }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_refresh),
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        contentDescription = "refresh"
-                    )
+                if (!isInDownloadingState) {
+                    IconButton(
+                        modifier = Modifier.size(36.dp),
+                        onClick = onRefresh
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_refresh),
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            contentDescription = "refresh"
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RemoteImage(
+    url: String?,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    contentScale: ContentScale = ContentScale.Crop,
+    alignment: Alignment = Alignment.Center
+) {
+    val resource = asyncPainterResource(data = url?: "")
+
+    when (resource) {
+        is Resource.Loading,
+        is Resource.Failure -> {
+            Image(
+                painter = painterResource(Res.drawable.media_file_icon),
+                contentDescription = contentDescription,
+                modifier = modifier,
+                contentScale = contentScale,
+                alignment = alignment
+            )
+        }
+        is Resource.Success -> {
+            Image(
+                painter = resource.value,
+                contentDescription = contentDescription,
+                modifier = modifier,
+                contentScale = contentScale,
+                alignment = alignment
+            )
         }
     }
 }

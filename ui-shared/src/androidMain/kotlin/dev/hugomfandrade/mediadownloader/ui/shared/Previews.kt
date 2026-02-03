@@ -23,7 +23,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Preview
 @Composable
-fun DownloadableItemPreview() {
+fun DownloadableItemViewPreview() {
     
     val downloadableItem = DownloadableItem(
         url = "item.url",
@@ -34,7 +34,7 @@ fun DownloadableItemPreview() {
 
     MaterialTheme {
         Surface(modifier = Modifier.wrapContentHeight().fillMaxWidth().background(Color.White)) {
-            DownloadableItem(item = downloadableItem)
+            DownloadableItemView(item = downloadableItem,)
         }
     }
 }

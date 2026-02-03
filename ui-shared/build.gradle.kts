@@ -25,6 +25,8 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.components.resources)
                 implementation(project(":core"))
+
+                implementation("media.kamel:kamel-image:1.0.0")
             }
         }
         val androidMain by getting {

@@ -1,0 +1,6 @@
+<resources>
+    <!-- DOWNLOAD -->
+    <string name="did_not_download">did not download</string>
+    <string name="url_no_longer_exists">URL no longer exists</string>
+    <string name="download_cancelled">cancelled</string>
+</resources>
